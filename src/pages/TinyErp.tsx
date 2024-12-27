@@ -6,6 +6,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
+interface TinyErpSettings {
+  client_id: string;
+  client_secret: string;
+  redirect_uri: string;
+}
+
+interface UserIntegration {
+  settings: TinyErpSettings;
+}
+
 const TinyErp = () => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
@@ -72,13 +82,13 @@ const TinyErp = () => {
 
       if (fetchError) throw fetchError;
 
-      const { client_id, redirect_uri } = userIntegration.settings;
+      const settings = userIntegration.settings as TinyErpSettings;
 
       // URL de autorização do Tiny ERP
       const authUrl = `https://api.tiny.com.br/oauth2/authorize?` +
         `response_type=code&` +
-        `client_id=${encodeURIComponent(client_id)}&` +
-        `redirect_uri=${encodeURIComponent(redirect_uri)}&` +
+        `client_id=${encodeURIComponent(settings.client_id)}&` +
+        `redirect_uri=${encodeURIComponent(settings.redirect_uri)}&` +
         `scope=empresas`;
 
       // Redirecionar para a página de autorização
