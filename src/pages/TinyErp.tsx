@@ -67,15 +67,45 @@ const TinyErp = () => {
         throw new Error("Usuário não autenticado");
       }
 
-      const { error } = await supabase.from("user_integrations").insert({
-        integration_id: integration.id,
-        user_id: userId,
-        settings: {
-          client_id: data.client_id,
-          client_secret: data.client_secret,
-          redirect_uri: data.redirect_uri,
-        },
-      });
+      // Primeiro, verificar se já existe uma integração para este usuário
+      const { data: existingIntegration, error: fetchError } = await supabase
+        .from("user_integrations")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("integration_id", integration.id)
+        .single();
+
+      if (fetchError && fetchError.code !== "PGRST116") { // PGRST116 é o código para "não encontrado"
+        throw fetchError;
+      }
+
+      let error;
+      if (existingIntegration) {
+        // Se existir, atualizar
+        ({ error } = await supabase
+          .from("user_integrations")
+          .update({
+            settings: {
+              client_id: data.client_id,
+              client_secret: data.client_secret,
+              redirect_uri: data.redirect_uri,
+            },
+          })
+          .eq("id", existingIntegration.id));
+      } else {
+        // Se não existir, criar novo
+        ({ error } = await supabase
+          .from("user_integrations")
+          .insert({
+            integration_id: integration.id,
+            user_id: userId,
+            settings: {
+              client_id: data.client_id,
+              client_secret: data.client_secret,
+              redirect_uri: data.redirect_uri,
+            },
+          }));
+      }
 
       if (error) throw error;
 
