@@ -11,7 +11,7 @@ interface TinyErpSettings {
 }
 
 // Type guard to check if the settings match TinyErpSettings interface
-function isTinyErpSettings(settings: Json): settings is TinyErpSettings {
+function isTinyErpSettings(settings: Json | null): settings is TinyErpSettings {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
     return false;
   }
