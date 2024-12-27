@@ -61,7 +61,6 @@ const TinyErp = () => {
         return;
       }
 
-      // First cast to unknown, then to TinyErpSettings to avoid direct type assertion errors
       const settings = data?.settings as unknown as TinyErpSettings | undefined;
       setHasCredentials(!!settings?.client_id);
     };
@@ -75,6 +74,7 @@ const TinyErp = () => {
         throw new Error("Usuário não autenticado ou integração não encontrada");
       }
 
+      console.log("Buscando credenciais do usuário...");
       const { data: userIntegration, error: fetchError } = await supabase
         .from("user_integrations")
         .select("settings")
@@ -82,23 +82,31 @@ const TinyErp = () => {
         .eq("integration_id", integration.id)
         .single();
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error("Erro ao buscar credenciais:", fetchError);
+        throw fetchError;
+      }
 
-      // First cast to unknown, then to TinyErpSettings to avoid direct type assertion errors
       const settings = userIntegration.settings as unknown as TinyErpSettings;
       if (!settings || !settings.client_id || !settings.redirect_uri) {
         throw new Error("Credenciais inválidas ou incompletas");
       }
 
+      console.log("Construindo URL de autorização...");
+      console.log("Client ID:", settings.client_id);
+      console.log("Redirect URI:", settings.redirect_uri);
+
       // URL de autorização do Tiny ERP
-      const authUrl = `https://api.tiny.com.br/oauth2/authorize?` +
-        `response_type=code&` +
-        `client_id=${encodeURIComponent(settings.client_id)}&` +
-        `redirect_uri=${encodeURIComponent(settings.redirect_uri)}&` +
-        `scope=empresas`;
+      const authUrl = new URL("https://api.tiny.com.br/oauth2/authorize");
+      authUrl.searchParams.append("response_type", "code");
+      authUrl.searchParams.append("client_id", settings.client_id);
+      authUrl.searchParams.append("redirect_uri", settings.redirect_uri);
+      authUrl.searchParams.append("scope", "empresas");
+
+      console.log("URL de autorização construída:", authUrl.toString());
 
       // Redirecionar para a página de autorização
-      window.location.href = authUrl;
+      window.location.href = authUrl.toString();
     } catch (error) {
       console.error("Erro ao iniciar autenticação:", error);
       toast({
