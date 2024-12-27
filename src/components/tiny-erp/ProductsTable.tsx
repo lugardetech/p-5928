@@ -36,7 +36,7 @@ export const ProductsTable = () => {
         throw new Error("Token de acesso não encontrado");
       }
 
-      const response = await fetch("https://api.tiny.com.br/public-api/v3/produtos", {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tiny-products`, {
         headers: {
           "Authorization": `Bearer ${userIntegration.access_token}`,
         },

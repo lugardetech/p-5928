@@ -8,6 +8,7 @@ interface TinyErpSettings {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
+  [key: string]: string; // Add index signature
 }
 
 // Type guard to check if the settings match TinyErpSettings interface
