@@ -15,19 +15,30 @@ export const ProductsTable = () => {
   const { data: products, isLoading } = useQuery({
     queryKey: ["tiny-products"],
     queryFn: async () => {
+      // First get the integration ID
       const { data: integration } = await supabase
-        .from("user_integrations")
-        .select("access_token")
-        .eq("integration_id", "tiny_erp")
+        .from("integrations")
+        .select("id")
+        .eq("name", "tiny_erp")
         .single();
 
-      if (!integration?.access_token) {
+      if (!integration?.id) {
+        throw new Error("Integração não encontrada");
+      }
+
+      const { data: userIntegration } = await supabase
+        .from("user_integrations")
+        .select("access_token")
+        .eq("integration_id", integration.id)
+        .single();
+
+      if (!userIntegration?.access_token) {
         throw new Error("Token de acesso não encontrado");
       }
 
       const response = await fetch("https://api.tiny.com.br/public-api/v3/produtos", {
         headers: {
-          "Authorization": `Bearer ${integration.access_token}`,
+          "Authorization": `Bearer ${userIntegration.access_token}`,
         },
       });
 

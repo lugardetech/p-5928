@@ -49,7 +49,7 @@ export const useIntegrationStatus = () => {
         .from("integrations")
         .select("id")
         .eq("name", "tiny_erp")
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching integration:", error);
