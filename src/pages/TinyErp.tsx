@@ -96,12 +96,12 @@ const TinyErp = () => {
       console.log("Client ID:", settings.client_id);
       console.log("Redirect URI:", settings.redirect_uri);
 
-      // URL de autorização do Tiny ERP
-      const authUrl = new URL("https://api.tiny.com.br/oauth2/authorize");
-      authUrl.searchParams.append("response_type", "code");
+      // URL de autorização do Tiny ERP (OpenID Connect)
+      const authUrl = new URL("https://accounts.tiny.com.br/realms/tiny/protocol/openid-connect/auth");
       authUrl.searchParams.append("client_id", settings.client_id);
       authUrl.searchParams.append("redirect_uri", settings.redirect_uri);
-      authUrl.searchParams.append("scope", "empresas");
+      authUrl.searchParams.append("scope", "openid");
+      authUrl.searchParams.append("response_type", "code");
 
       console.log("URL de autorização construída:", authUrl.toString());
 
