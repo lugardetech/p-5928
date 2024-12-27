@@ -13,6 +13,7 @@ import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
+import TinyErp from "./pages/TinyErp";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +79,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Notifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/integration/tiny-erp"
+            element={
+              <ProtectedRoute>
+                <TinyErp />
               </ProtectedRoute>
             }
           />

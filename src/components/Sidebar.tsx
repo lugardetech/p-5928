@@ -1,4 +1,4 @@
-import { Home, PieChart, Settings, User, CreditCard, Bell } from "lucide-react";
+import { Home, PieChart, Settings, User, CreditCard, Bell, Grid, Building } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 
@@ -7,6 +7,14 @@ const menuItems = [
   { icon: PieChart, label: "Analytics", path: "/analytics" },
   { icon: CreditCard, label: "Transactions", path: "/transactions" },
   { icon: Bell, label: "Notifications", path: "/notifications" },
+  {
+    icon: Grid,
+    label: "Integração",
+    path: "/integration",
+    submenu: [
+      { icon: Building, label: "Tiny ERP", path: "/integration/tiny-erp" },
+    ],
+  },
   { icon: User, label: "Profile", path: "/profile" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
@@ -26,20 +34,57 @@ const Sidebar = () => {
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
+              const hasSubmenu = item.submenu && item.submenu.length > 0;
               
               return (
                 <li key={item.path}>
-                  <Link
-                    to={item.path}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                      "hover:bg-white/10",
-                      isActive ? "bg-white/10" : "text-secondary"
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{item.label}</span>
-                  </Link>
+                  {hasSubmenu ? (
+                    <div>
+                      <div
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                          "text-secondary"
+                        )}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span>{item.label}</span>
+                      </div>
+                      <ul className="ml-6 mt-2 space-y-2">
+                        {item.submenu.map((subItem) => {
+                          const SubIcon = subItem.icon;
+                          const isSubActive = location.pathname === subItem.path;
+                          
+                          return (
+                            <li key={subItem.path}>
+                              <Link
+                                to={subItem.path}
+                                className={cn(
+                                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                                  "hover:bg-white/10",
+                                  isSubActive ? "bg-white/10" : "text-secondary"
+                                )}
+                              >
+                                <SubIcon className="h-5 w-5" />
+                                <span>{subItem.label}</span>
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ) : (
+                    <Link
+                      to={item.path}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                        "hover:bg-white/10",
+                        isActive ? "bg-white/10" : "text-secondary"
+                      )}
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span>{item.label}</span>
+                    </Link>
+                  )}
                 </li>
               );
             })}
