@@ -23,11 +23,11 @@ Deno.serve(async (req) => {
     }
 
     console.log("Edge Function: Making request to Tiny API")
-    const response = await fetch('https://api.tiny.com.br/api/v3/produtos.pesquisa.php', {
+    const response = await fetch('https://api.tiny.com.br/public-api/v3/produtos', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authHeader}`,
+        'Authorization': authHeader, // Already in "Bearer {token}" format from the frontend
       },
     })
 
