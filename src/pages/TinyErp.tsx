@@ -61,7 +61,8 @@ const TinyErp = () => {
         return;
       }
 
-      setHasCredentials(!!data?.settings?.client_id);
+      const settings = data?.settings as TinyErpSettings | undefined;
+      setHasCredentials(!!settings?.client_id);
     };
 
     checkCredentials();
@@ -83,6 +84,9 @@ const TinyErp = () => {
       if (fetchError) throw fetchError;
 
       const settings = userIntegration.settings as TinyErpSettings;
+      if (!settings || !settings.client_id || !settings.redirect_uri) {
+        throw new Error("Credenciais inválidas ou incompletas");
+      }
 
       // URL de autorização do Tiny ERP
       const authUrl = `https://api.tiny.com.br/oauth2/authorize?` +
