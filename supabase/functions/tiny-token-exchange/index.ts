@@ -70,9 +70,9 @@ serve(async (req) => {
       redirect_uri: string
     }
 
-    // Trocar código por tokens
+    // Trocar código por tokens usando a URL correta do Tiny ERP
     console.log("🔄 Iniciando troca do código por tokens...")
-    const tokenResponse = await fetch("https://api.tiny.com.br/oauth2/token", {
+    const tokenResponse = await fetch("https://accounts.tiny.com.br/realms/tiny/protocol/openid-connect/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
