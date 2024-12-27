@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      integrations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          status: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          status?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          status?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -32,6 +59,56 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      user_integrations: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          id: string
+          integration_id: string
+          refresh_token: string | null
+          refresh_token_expires_at: string | null
+          settings: Json | null
+          status: boolean | null
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          integration_id: string
+          refresh_token?: string | null
+          refresh_token_expires_at?: string | null
+          settings?: Json | null
+          status?: boolean | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          integration_id?: string
+          refresh_token?: string | null
+          refresh_token_expires_at?: string | null
+          settings?: Json | null
+          status?: boolean | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_integrations_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
