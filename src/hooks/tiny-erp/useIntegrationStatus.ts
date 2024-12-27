@@ -2,11 +2,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { Json } from "@/integrations/supabase/types";
 
 interface TinyErpSettings {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
+}
+
+// Type guard to check if the settings match TinyErpSettings interface
+function isTinyErpSettings(settings: Json): settings is TinyErpSettings {
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+    return false;
+  }
+
+  const s = settings as Record<string, unknown>;
+  return (
+    typeof s.client_id === 'string' &&
+    typeof s.client_secret === 'string' &&
+    typeof s.redirect_uri === 'string'
+  );
 }
 
 export const useIntegrationStatus = () => {
@@ -25,24 +40,34 @@ export const useIntegrationStatus = () => {
     getCurrentUser();
   }, []);
 
+  // First, get the integration ID for tiny_erp
   const { data: integration } = useQuery({
     queryKey: ["tiny-integration"],
     queryFn: async () => {
+      console.log("Fetching tiny_erp integration...");
       const { data, error } = await supabase
         .from("integrations")
         .select("id")
         .eq("name", "tiny_erp")
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching integration:", error);
+        throw error;
+      }
+      console.log("Found integration:", data);
       return data;
     },
   });
 
   useEffect(() => {
     const checkIntegrationStatus = async () => {
-      if (!userId || !integration?.id) return;
+      if (!userId || !integration?.id) {
+        console.log("Missing userId or integration.id", { userId, integrationId: integration?.id });
+        return;
+      }
 
+      console.log("Checking integration status for user", userId);
       const { data, error } = await supabase
         .from("user_integrations")
         .select("settings, access_token, token_expires_at")
@@ -51,13 +76,14 @@ export const useIntegrationStatus = () => {
         .maybeSingle();
 
       if (error) {
-        console.error("Erro ao verificar status da integração:", error);
+        console.error("Error checking integration status:", error);
         return;
       }
 
+      console.log("Integration status data:", data);
+
       if (data) {
-        const settings = data.settings as TinyErpSettings;
-        if (settings?.client_id && settings?.client_secret && settings?.redirect_uri) {
+        if (isTinyErpSettings(data.settings)) {
           setHasCredentials(true);
           
           if (data.access_token && data.token_expires_at) {
@@ -67,6 +93,7 @@ export const useIntegrationStatus = () => {
             setIsConnected(false);
           }
         } else {
+          console.log("Invalid settings format:", data.settings);
           setHasCredentials(false);
           setIsConnected(false);
         }
@@ -82,7 +109,7 @@ export const useIntegrationStatus = () => {
         throw new Error("Usuário não autenticado ou integração não encontrada");
       }
 
-      console.log("Buscando credenciais do usuário...");
+      console.log("Fetching user integration...");
       const { data: userIntegration, error: fetchError } = await supabase
         .from("user_integrations")
         .select("settings")
@@ -91,30 +118,25 @@ export const useIntegrationStatus = () => {
         .single();
 
       if (fetchError) {
-        console.error("Erro ao buscar credenciais:", fetchError);
+        console.error("Error fetching user integration:", fetchError);
         throw fetchError;
       }
 
-      const settings = userIntegration.settings as TinyErpSettings;
-      if (!settings?.client_id || !settings?.redirect_uri) {
+      if (!isTinyErpSettings(userIntegration.settings)) {
         throw new Error("Credenciais inválidas ou incompletas");
       }
 
-      console.log("Construindo URL de autorização...");
-      console.log("Client ID:", settings.client_id);
-      console.log("Redirect URI:", settings.redirect_uri);
-
+      console.log("Building auth URL...");
       const authUrl = new URL("https://accounts.tiny.com.br/realms/tiny/protocol/openid-connect/auth");
-      authUrl.searchParams.append("client_id", settings.client_id);
-      authUrl.searchParams.append("redirect_uri", settings.redirect_uri);
+      authUrl.searchParams.append("client_id", userIntegration.settings.client_id);
+      authUrl.searchParams.append("redirect_uri", userIntegration.settings.redirect_uri);
       authUrl.searchParams.append("scope", "openid");
       authUrl.searchParams.append("response_type", "code");
 
-      console.log("URL de autorização construída:", authUrl.toString());
-
+      console.log("Auth URL:", authUrl.toString());
       window.location.href = authUrl.toString();
     } catch (error) {
-      console.error("Erro ao iniciar autenticação:", error);
+      console.error("Auth error:", error);
       toast({
         variant: "destructive",
         title: "Erro ao iniciar autenticação",
