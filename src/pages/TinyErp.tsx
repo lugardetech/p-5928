@@ -61,7 +61,8 @@ const TinyErp = () => {
         return;
       }
 
-      const settings = data?.settings as TinyErpSettings | undefined;
+      // First cast to unknown, then to TinyErpSettings to avoid direct type assertion errors
+      const settings = data?.settings as unknown as TinyErpSettings | undefined;
       setHasCredentials(!!settings?.client_id);
     };
 
@@ -83,7 +84,8 @@ const TinyErp = () => {
 
       if (fetchError) throw fetchError;
 
-      const settings = userIntegration.settings as TinyErpSettings;
+      // First cast to unknown, then to TinyErpSettings to avoid direct type assertion errors
+      const settings = userIntegration.settings as unknown as TinyErpSettings;
       if (!settings || !settings.client_id || !settings.redirect_uri) {
         throw new Error("Credenciais inválidas ou incompletas");
       }
