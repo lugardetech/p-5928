@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Settings2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Json } from "@/integrations/supabase/types";
 
 interface TinyErpSettings {
   client_id: string;
@@ -20,6 +21,18 @@ interface UserIntegration {
   access_token?: string;
   token_expires_at?: string;
 }
+
+// Helper function to validate if a JSON object is TinyErpSettings
+const isTinyErpSettings = (json: Json): json is TinyErpSettings => {
+  if (typeof json !== 'object' || json === null || Array.isArray(json)) return false;
+  
+  const settings = json as Record<string, unknown>;
+  return (
+    typeof settings.client_id === 'string' &&
+    typeof settings.client_secret === 'string' &&
+    typeof settings.redirect_uri === 'string'
+  );
+};
 
 const TinyErp = () => {
   const { toast } = useToast();
@@ -67,15 +80,22 @@ const TinyErp = () => {
         return;
       }
 
-      const userIntegration = data as UserIntegration | null;
-      setHasCredentials(!!userIntegration?.settings?.client_id);
-      
-      // Verifica se o token está válido
-      if (userIntegration?.access_token && userIntegration?.token_expires_at) {
-        const expiresAt = new Date(userIntegration.token_expires_at);
-        setIsConnected(expiresAt > new Date());
-      } else {
-        setIsConnected(false);
+      if (data) {
+        const settings = data.settings;
+        if (isTinyErpSettings(settings)) {
+          setHasCredentials(true);
+          
+          // Verifica se o token está válido
+          if (data.access_token && data.token_expires_at) {
+            const expiresAt = new Date(data.token_expires_at);
+            setIsConnected(expiresAt > new Date());
+          } else {
+            setIsConnected(false);
+          }
+        } else {
+          setHasCredentials(false);
+          setIsConnected(false);
+        }
       }
     };
 
@@ -101,11 +121,12 @@ const TinyErp = () => {
         throw fetchError;
       }
 
-      const settings = userIntegration.settings as TinyErpSettings;
-      if (!settings || !settings.client_id || !settings.redirect_uri) {
+      if (!isTinyErpSettings(userIntegration.settings)) {
         throw new Error("Credenciais inválidas ou incompletas");
       }
 
+      const settings = userIntegration.settings;
+      
       console.log("Construindo URL de autorização...");
       console.log("Client ID:", settings.client_id);
       console.log("Redirect URI:", settings.redirect_uri);
