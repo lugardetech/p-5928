@@ -5,6 +5,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Settings2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface TinyErpSettings {
   client_id: string;
@@ -14,12 +17,15 @@ interface TinyErpSettings {
 
 interface UserIntegration {
   settings: TinyErpSettings;
+  access_token?: string;
+  token_expires_at?: string;
 }
 
 const TinyErp = () => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [hasCredentials, setHasCredentials] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -46,26 +52,34 @@ const TinyErp = () => {
   });
 
   useEffect(() => {
-    const checkCredentials = async () => {
+    const checkIntegrationStatus = async () => {
       if (!userId || !integration?.id) return;
 
       const { data, error } = await supabase
         .from("user_integrations")
-        .select("settings")
+        .select("settings, access_token, token_expires_at")
         .eq("user_id", userId)
         .eq("integration_id", integration.id)
         .maybeSingle();
 
       if (error) {
-        console.error("Erro ao verificar credenciais:", error);
+        console.error("Erro ao verificar status da integração:", error);
         return;
       }
 
-      const settings = data?.settings as unknown as TinyErpSettings | undefined;
-      setHasCredentials(!!settings?.client_id);
+      const userIntegration = data as UserIntegration | null;
+      setHasCredentials(!!userIntegration?.settings?.client_id);
+      
+      // Verifica se o token está válido
+      if (userIntegration?.access_token && userIntegration?.token_expires_at) {
+        const expiresAt = new Date(userIntegration.token_expires_at);
+        setIsConnected(expiresAt > new Date());
+      } else {
+        setIsConnected(false);
+      }
     };
 
-    checkCredentials();
+    checkIntegrationStatus();
   }, [userId, integration?.id]);
 
   const handleAuth = async () => {
@@ -87,7 +101,7 @@ const TinyErp = () => {
         throw fetchError;
       }
 
-      const settings = userIntegration.settings as unknown as TinyErpSettings;
+      const settings = userIntegration.settings as TinyErpSettings;
       if (!settings || !settings.client_id || !settings.redirect_uri) {
         throw new Error("Credenciais inválidas ou incompletas");
       }
@@ -96,7 +110,6 @@ const TinyErp = () => {
       console.log("Client ID:", settings.client_id);
       console.log("Redirect URI:", settings.redirect_uri);
 
-      // URL de autorização do Tiny ERP (OpenID Connect)
       const authUrl = new URL("https://accounts.tiny.com.br/realms/tiny/protocol/openid-connect/auth");
       authUrl.searchParams.append("client_id", settings.client_id);
       authUrl.searchParams.append("redirect_uri", settings.redirect_uri);
@@ -105,7 +118,6 @@ const TinyErp = () => {
 
       console.log("URL de autorização construída:", authUrl.toString());
 
-      // Redirecionar para a página de autorização
       window.location.href = authUrl.toString();
     } catch (error) {
       console.error("Erro ao iniciar autenticação:", error);
@@ -118,38 +130,54 @@ const TinyErp = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <header>
-        <h1 className="text-4xl font-bold text-primary">Integração Tiny ERP</h1>
-        <p className="text-secondary-foreground">Gerencie sua integração com o Tiny ERP</p>
-      </header>
-
-      {!hasCredentials ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Configurar Credenciais</CardTitle>
-            <CardDescription>
-              Insira as credenciais do seu aplicativo Tiny ERP para começar a integração.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <CredentialsForm />
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Autenticação</CardTitle>
-            <CardDescription>
-              Suas credenciais estão configuradas. Clique no botão abaixo para autorizar o acesso ao Tiny ERP.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={handleAuth}>
-              Conectar ao Tiny ERP
-            </Button>
-          </CardContent>
-        </Card>
+    <div className="flex items-center space-x-2">
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <Settings2 className="h-5 w-5" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Integração Tiny ERP</DialogTitle>
+            <DialogDescription>
+              Gerencie sua integração com o Tiny ERP
+            </DialogDescription>
+          </DialogHeader>
+          
+          {!hasCredentials ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurar Credenciais</CardTitle>
+                <CardDescription>
+                  Insira as credenciais do seu aplicativo Tiny ERP para começar a integração.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CredentialsForm />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Autenticação</CardTitle>
+                <CardDescription>
+                  Suas credenciais estão configuradas. Clique no botão abaixo para autorizar o acesso ao Tiny ERP.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={handleAuth}>
+                  Conectar ao Tiny ERP
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </DialogContent>
+      </Dialog>
+      {isConnected && (
+        <Badge variant="default" className="bg-green-500">
+          Conectado
+        </Badge>
       )}
     </div>
   );
