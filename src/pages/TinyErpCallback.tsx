@@ -14,6 +14,9 @@ const TinyErpCallback = () => {
       const error = searchParams.get("error");
       const error_description = searchParams.get("error_description");
 
+      console.log("Iniciando callback do Tiny ERP");
+      console.log("Código recebido:", code);
+      
       if (error || !code) {
         console.error("Erro na autenticação:", error, error_description);
         toast({
@@ -33,29 +36,42 @@ const TinyErpCallback = () => {
         if (!user) {
           throw new Error("Usuário não autenticado");
         }
+        console.log("Usuário autenticado:", user.id);
 
         // Buscar a integração do Tiny ERP
-        const { data: integration } = await supabase
+        const { data: integration, error: integrationError } = await supabase
           .from("integrations")
           .select("id")
           .eq("name", "tiny_erp")
           .single();
 
+        if (integrationError) {
+          console.error("Erro ao buscar integração:", integrationError);
+          throw new Error("Erro ao buscar integração");
+        }
+
         if (!integration) {
           throw new Error("Integração não encontrada");
         }
+        console.log("Integração encontrada:", integration.id);
 
         // Buscar as credenciais do usuário
-        const { data: userIntegration } = await supabase
+        const { data: userIntegration, error: userIntegrationError } = await supabase
           .from("user_integrations")
           .select("settings")
           .eq("user_id", user.id)
           .eq("integration_id", integration.id)
           .single();
 
+        if (userIntegrationError) {
+          console.error("Erro ao buscar credenciais:", userIntegrationError);
+          throw new Error("Erro ao buscar credenciais");
+        }
+
         if (!userIntegration) {
           throw new Error("Credenciais não encontradas");
         }
+        console.log("Credenciais encontradas");
 
         // Cast settings para o tipo correto
         const settings = userIntegration.settings as unknown as { 
@@ -64,6 +80,7 @@ const TinyErpCallback = () => {
           redirect_uri: string;
         };
 
+        console.log("Fazendo requisição para obter tokens");
         // Fazer a requisição para trocar o código pelos tokens
         const tokenResponse = await fetch("https://api.tiny.com.br/oauth2/token", {
           method: "POST",
@@ -81,6 +98,7 @@ const TinyErpCallback = () => {
 
         if (!tokenResponse.ok) {
           const errorData = await tokenResponse.json();
+          console.error("Erro na resposta da API:", errorData);
           throw new Error(`Erro ao obter tokens: ${errorData.error_description || errorData.message}`);
         }
 
@@ -94,6 +112,7 @@ const TinyErpCallback = () => {
           ? new Date(now.getTime() + tokens.refresh_token_expires_in * 1000)
           : null;
 
+        console.log("Salvando tokens no banco de dados");
         // Atualizar os tokens no banco
         const { error: updateError } = await supabase
           .from("user_integrations")
@@ -108,6 +127,7 @@ const TinyErpCallback = () => {
           .eq("integration_id", integration.id);
 
         if (updateError) {
+          console.error("Erro ao salvar tokens:", updateError);
           throw updateError;
         }
 
