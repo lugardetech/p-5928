@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 const credentialsSchema = z.object({
   client_id: z.string().min(1, "Client ID é obrigatório"),
@@ -19,6 +20,18 @@ type CredentialsForm = z.infer<typeof credentialsSchema>;
 
 const TinyErp = () => {
   const { toast } = useToast();
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Get current user
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    getCurrentUser();
+  }, []);
 
   // Buscar integração do Tiny ERP
   const { data: integration } = useQuery({
@@ -50,8 +63,13 @@ const TinyErp = () => {
         throw new Error("Integração não encontrada");
       }
 
+      if (!userId) {
+        throw new Error("Usuário não autenticado");
+      }
+
       const { error } = await supabase.from("user_integrations").insert({
         integration_id: integration.id,
+        user_id: userId,
         settings: {
           client_id: data.client_id,
           client_secret: data.client_secret,
