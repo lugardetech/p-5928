@@ -86,13 +86,23 @@ serve(async (req) => {
       }),
     })
 
+    const responseText = await tokenResponse.text()
+    console.log("Resposta da API do Tiny:", responseText)
+
     if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.json()
-      console.error("❌ Erro na resposta da API:", errorData)
-      throw new Error(`Erro ao obter tokens: ${errorData.error_description || errorData.message}`)
+      console.error("❌ Erro na resposta da API. Status:", tokenResponse.status)
+      console.error("Resposta:", responseText)
+      throw new Error(`Erro ao obter tokens: ${responseText}`)
     }
 
-    const tokens = await tokenResponse.json()
+    let tokens
+    try {
+      tokens = JSON.parse(responseText)
+    } catch (error) {
+      console.error("❌ Erro ao parsear resposta como JSON:", error)
+      throw new Error("Resposta inválida do servidor de autenticação")
+    }
+
     console.log("✅ Tokens obtidos com sucesso")
     console.log("Tokens recebidos:", {
       access_token: tokens.access_token ? "presente" : "ausente",
