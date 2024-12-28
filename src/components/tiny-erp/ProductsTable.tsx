@@ -70,7 +70,19 @@ export const ProductsTable = () => {
       }
 
       console.log("✅ Produtos recebidos:", data);
-      return data.produtos as Product[];
+      
+      if (!data?.itens) {
+        throw new Error("Nenhum produto encontrado");
+      }
+
+      return data.itens.map(item => ({
+        id: item.id,
+        nome: item.descricao,
+        codigo: item.sku,
+        preco: item.precos?.preco?.toFixed(2) || "0.00",
+        unidade: item.unidade || "-",
+        estoque: "Consultar"
+      }));
     },
     retry: false,
     meta: {
