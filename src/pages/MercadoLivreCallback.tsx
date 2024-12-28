@@ -36,14 +36,18 @@ export default function MercadoLivreCallback() {
           .from("integrations")
           .select("id")
           .eq("name", "mercado_livre")
-          .single();
+          .maybeSingle();
 
         if (!integration) {
           throw new Error("Integração não encontrada");
         }
 
         const { data, error } = await supabase.functions.invoke("mercadolivre-token-exchange", {
-          body: { code, userId: user.id, integrationId: integration.id }
+          body: { 
+            code, 
+            userId: user.id, 
+            integrationId: integration.id 
+          }
         });
 
         if (error) throw error;

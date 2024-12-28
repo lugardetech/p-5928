@@ -27,9 +27,9 @@ serve(async (req) => {
       .select('settings')
       .eq('user_id', userId)
       .eq('integration_id', integrationId)
-      .single()
+      .maybeSingle()
 
-    if (fetchError) {
+    if (fetchError || !userIntegration) {
       throw new Error('Credenciais não encontradas')
     }
 
@@ -54,7 +54,7 @@ serve(async (req) => {
     if (!tokenResponse.ok) {
       const error = await tokenResponse.json()
       console.error('❌ Erro ao trocar tokens:', error)
-      throw new Error('Erro ao trocar tokens')
+      throw new Error(`Erro ao trocar tokens: ${JSON.stringify(error)}`)
     }
 
     const tokens = await tokenResponse.json()
@@ -85,15 +85,27 @@ serve(async (req) => {
     console.log('✅ Tokens salvos com sucesso')
 
     return new Response(
-      JSON.stringify(tokens),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      JSON.stringify({ success: true }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
+        status: 200 
+      },
     )
 
   } catch (err) {
     console.error('❌ Erro:', err)
     return new Response(
       JSON.stringify({ error: err.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 },
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        }, 
+        status: 400 
+      },
     )
   }
 })
