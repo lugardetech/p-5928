@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Json } from "@/integrations/supabase/types";
 
 export interface Product {
   id: string;
@@ -9,6 +10,26 @@ export interface Product {
   preco: string;
   unidade: string;
   estoque: string;
+}
+
+interface TinyErpSettings {
+  client_id: string;
+  client_secret: string;
+  redirect_uri: string;
+}
+
+// Type guard para verificar se o objeto settings tem a estrutura correta
+function isTinyErpSettings(settings: Json | null): settings is TinyErpSettings {
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+    return false;
+  }
+
+  const s = settings as Record<string, unknown>;
+  return (
+    typeof s.client_id === 'string' &&
+    typeof s.client_secret === 'string' &&
+    typeof s.redirect_uri === 'string'
+  );
 }
 
 export const useTinyProducts = () => {
@@ -53,6 +74,11 @@ export const useTinyProducts = () => {
       if (!userIntegration?.access_token) {
         console.error("❌ Token de acesso não encontrado");
         throw new Error("Token de acesso não encontrado");
+      }
+
+      if (!isTinyErpSettings(userIntegration.settings)) {
+        console.error("❌ Configurações inválidas:", userIntegration.settings);
+        throw new Error("Configurações da integração inválidas");
       }
 
       // Verificar se o token expirou
