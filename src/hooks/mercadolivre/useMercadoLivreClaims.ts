@@ -32,13 +32,8 @@ export function useMercadoLivreClaims() {
           throw error;
         }
 
-        if (!data || !Array.isArray(data)) {
-          console.error("❌ Formato de dados inválido:", data);
-          throw new Error("Formato de dados inválido");
-        }
-
         console.log("✅ Reclamações obtidas com sucesso:", data);
-        return data as MercadoLivreClaim[];
+        return data?.results || [];
       } catch (error) {
         console.error("❌ Erro ao buscar reclamações:", error);
         toast({
