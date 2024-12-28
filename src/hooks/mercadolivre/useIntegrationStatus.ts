@@ -13,29 +13,50 @@ export function useIntegrationStatus() {
         throw new Error("Usuário não autenticado");
       }
 
-      const { data: integration } = await supabase
+      // Primeiro busca a integração
+      const { data: integration, error: integrationError } = await supabase
         .from("integrations")
         .select("id")
         .eq("name", "mercado_livre")
-        .single();
+        .maybeSingle();
 
-      if (!integration) {
-        throw new Error("Integração não encontrada");
+      if (integrationError) {
+        console.error("❌ Erro ao buscar integração:", integrationError);
+        throw integrationError;
       }
 
-      const { data: userIntegration, error } = await supabase
+      if (!integration) {
+        console.log("❌ Integração não encontrada");
+        return {
+          isConfigured: false,
+          isAuthenticated: false,
+          settings: null,
+        };
+      }
+
+      // Depois busca a integração do usuário
+      const { data: userIntegration, error: userIntegrationError } = await supabase
         .from("user_integrations")
         .select("*")
         .eq("user_id", user.id)
         .eq("integration_id", integration.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== "PGRST116") {
-        console.error("❌ Erro ao buscar integração:", error);
-        throw error;
+      if (userIntegrationError && userIntegrationError.code !== "PGRST116") {
+        console.error("❌ Erro ao buscar integração do usuário:", userIntegrationError);
+        throw userIntegrationError;
       }
 
       console.log("✅ Status da integração obtido:", userIntegration);
+
+      // Se não houver integração do usuário, retorna não configurado
+      if (!userIntegration) {
+        return {
+          isConfigured: false,
+          isAuthenticated: false,
+          settings: null,
+        };
+      }
 
       // Fazendo o type casting de forma mais segura
       const settings = userIntegration?.settings as Record<string, unknown>;
