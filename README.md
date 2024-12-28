@@ -1,71 +1,81 @@
-# Welcome to your GPT Engineer project
+# Sistema de Gestão Empresarial
 
-## Project info
+## Visão Geral
 
-**URL**: https://run.gptengineer.app/projects/13c73ab1-92d8-41ed-bb5e-2a1670df0a5d/improve
+Este é um sistema de gestão empresarial desenvolvido com tecnologias modernas para auxiliar no controle de produtos, vendas, estoque e integrações com sistemas externos.
 
-## How can I edit this code?
+## Tecnologias Utilizadas
 
-There are several ways of editing your application.
+- **Frontend**:
+  - React com TypeScript
+  - Vite para build e desenvolvimento
+  - Tailwind CSS para estilização
+  - Shadcn/ui para componentes de interface
+  - React Query para gerenciamento de estado e cache
+  - React Router para navegação
 
-**Use GPT Engineer**
+- **Backend**:
+  - Supabase para autenticação e banco de dados
+  - PostgreSQL como banco de dados
+  - Edge Functions para lógica serverless
 
-Simply visit the GPT Engineer project at [GPT Engineer](https://gptengineer.app/projects/13c73ab1-92d8-41ed-bb5e-2a1670df0a5d/improve) and start prompting.
+## Funcionalidades Principais
 
-Changes made via gptengineer.app will be committed automatically to this repo.
+- Gestão de Produtos
+  - Cadastro e edição de produtos
+  - Controle de estoque
+  - Categorização
+  - Upload de imagens
 
-**Use your preferred IDE**
+- Gestão de Vendas
+  - Registro de pedidos
+  - Acompanhamento de status
+  - Histórico de vendas
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in the GPT Engineer UI.
+- Integrações
+  - Tiny ERP
+  - Outros sistemas via API
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Como Executar o Projeto
 
-Follow these steps:
+1. **Instalação das Dependências**:
+```bash
+npm install
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+2. **Executar em Desenvolvimento**:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+3. **Build para Produção**:
+```bash
+npm run build
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Estrutura do Projeto
 
-**Use GitHub Codespaces**
+- `/src/components`: Componentes reutilizáveis
+- `/src/pages`: Páginas da aplicação
+- `/src/modules`: Módulos específicos de funcionalidade
+- `/src/integrations`: Integrações com serviços externos
+- `/src/hooks`: Hooks personalizados
+- `/src/lib`: Utilitários e configurações
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Contribuição
 
-## What technologies are used for this project?
+Para contribuir com o projeto:
 
-This project is built with .
+1. Faça um fork do repositório
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-funcionalidade`)
+3. Faça commit das mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
+4. Faça push para a branch (`git push origin feature/nova-funcionalidade`)
+5. Abra um Pull Request
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Suporte
 
-## How can I deploy this project?
+Em caso de dúvidas ou problemas, abra uma issue no repositório ou entre em contato com a equipe de desenvolvimento.
 
-All GPT Engineer projects can be deployed directly via the GPT Engineer app.
+## Licença
 
-Simply visit your project at [GPT Engineer](https://gptengineer.app/projects/13c73ab1-92d8-41ed-bb5e-2a1670df0a5d/improve) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.gptengineer.app/tips-tricks/custom-domain/)
+Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
