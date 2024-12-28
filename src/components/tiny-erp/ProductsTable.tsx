@@ -18,7 +18,7 @@ interface Product {
 export const ProductsTable = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUnit, setSelectedUnit] = useState<string>("");
+  const [selectedUnit, setSelectedUnit] = useState<string>("all");
 
   const { data: products, isLoading, error } = useQuery({
     queryKey: ["tiny-products"],
@@ -127,7 +127,7 @@ export const ProductsTable = () => {
       product.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.codigo.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesUnit = selectedUnit === "" || product.unidade === selectedUnit;
+    const matchesUnit = selectedUnit === "all" || product.unidade === selectedUnit;
     
     return matchesSearch && matchesUnit;
   });
@@ -149,7 +149,7 @@ export const ProductsTable = () => {
               <SelectValue placeholder="Filtrar por unidade" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas as unidades</SelectItem>
+              <SelectItem value="all">Todas as unidades</SelectItem>
               {uniqueUnits.map((unit: string) => (
                 <SelectItem key={unit} value={unit}>
                   {unit}
