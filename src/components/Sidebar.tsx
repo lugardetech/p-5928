@@ -14,6 +14,7 @@ import {
   Truck,
   RotateCcw,
   HeadphonesIcon,
+  AlertCircle,
 } from "lucide-react";
 
 export function Sidebar() {
@@ -147,34 +148,19 @@ export function Sidebar() {
                 Mercado Livre
               </Link>
             </Button>
+            <Button
+              variant={location.pathname === "/integration/mercado-livre/claims" ? "secondary" : "ghost"}
+              className="w-full pl-8 justify-start"
+              asChild
+            >
+              <Link to="/integration/mercado-livre/claims">
+                <AlertCircle className="mr-2 h-4 w-4" />
+                Reclamações
+              </Link>
+            </Button>
           </div>
         </div>
 
-        <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold">Outras Seções</h2>
-          <div className="space-y-1">
-            <Button
-              variant={location.pathname === "/profile" ? "secondary" : "ghost"}
-              className="w-full justify-start"
-              asChild
-            >
-              <Link to="/profile">
-                <Users className="mr-2 h-4 w-4" />
-                Perfil
-              </Link>
-            </Button>
-            <Button
-              variant={location.pathname === "/transactions" ? "secondary" : "ghost"}
-              className="w-full justify-start"
-              asChild
-            >
-              <Link to="/transactions">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Transações
-              </Link>
-            </Button>
-          </div>
-        </div>
       </div>
     </div>
   );
