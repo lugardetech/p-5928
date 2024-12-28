@@ -20,13 +20,18 @@ import { ProductImage } from "./form/ProductImage";
 import { ProductCategory } from "./form/ProductCategory";
 import { FormData } from "./form/types";
 
-export function ProductForm() {
+interface ProductFormProps {
+  initialData?: FormData;
+  onSuccess?: () => void;
+}
+
+export function ProductForm({ initialData, onSuccess }: ProductFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<FormData>(initialData || {
     name: "",
     description: "",
     sku: "",
@@ -137,18 +142,20 @@ export function ProductForm() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Novo Produto
-        </Button>
-      </DialogTrigger>
+      {!initialData && (
+        <DialogTrigger asChild>
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Novo Produto
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Novo Produto</DialogTitle>
+            <DialogTitle>{initialData ? 'Editar Produto' : 'Novo Produto'}</DialogTitle>
             <DialogDescription>
-              Preencha os dados do produto abaixo.
+              {initialData ? 'Edite os dados do produto abaixo.' : 'Preencha os dados do produto abaixo.'}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-6 py-4">

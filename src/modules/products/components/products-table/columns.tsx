@@ -10,6 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { ProductForm } from "@/components/products/ProductForm";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Product {
   id: string;
@@ -22,6 +24,7 @@ interface Product {
   category: {
     name: string;
   } | null;
+  description?: string;
 }
 
 export const columns: ColumnDef<Product>[] = [
@@ -123,6 +126,35 @@ export const columns: ColumnDef<Product>[] = [
 // Componente wrapper para a linha da tabela
 export const ProductTableRow = ({ row }: { row: any }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [productData, setProductData] = useState<any>(null);
+  const { toast } = useToast();
+
+  const handleEdit = async () => {
+    try {
+      // Buscar dados completos do produto
+      const { data: product, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          category:categories(*)
+        `)
+        .eq('id', row.original.id)
+        .single();
+
+      if (error) throw error;
+
+      console.log("Dados do produto carregados:", product);
+      setProductData(product);
+      setIsEditing(true);
+    } catch (error) {
+      console.error("Erro ao carregar dados do produto:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao carregar produto",
+        description: "Não foi possível carregar os dados do produto para edição.",
+      });
+    }
+  };
 
   return (
     <Dialog>
@@ -143,7 +175,7 @@ export const ProductTableRow = ({ row }: { row: any }) => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsEditing(!isEditing)}
+                onClick={handleEdit}
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Editar
@@ -152,8 +184,14 @@ export const ProductTableRow = ({ row }: { row: any }) => {
           </DialogTitle>
         </DialogHeader>
         <div className="mt-6">
-          {isEditing ? (
-            <ProductForm existingProduct={row.original} onSuccess={() => setIsEditing(false)} />
+          {isEditing && productData ? (
+            <ProductForm 
+              initialData={productData}
+              onSuccess={() => {
+                setIsEditing(false);
+                setProductData(null);
+              }}
+            />
           ) : (
             <ProductDetailsCard product={row.original} />
           )}
