@@ -77,11 +77,11 @@ export const columns: ColumnDef<Product>[] = [
     header: "SKU",
   },
   {
-    accessorKey: "category.name",
+    accessorKey: "category",
     header: "Categoria",
     cell: ({ row }) => {
-      const category = row.getValue("category.name");
-      return category || "Sem categoria";
+      const category = row.original.category;
+      return category?.name || "Sem categoria";
     },
   },
   {
