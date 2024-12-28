@@ -19,6 +19,7 @@ export const useTinyProducts = () => {
     queryFn: async () => {
       console.log("=== Iniciando busca de produtos ===");
       
+      // Buscar integração
       const { data: integration, error: integrationError } = await supabase
         .from("integrations")
         .select("id")
@@ -37,9 +38,10 @@ export const useTinyProducts = () => {
 
       console.log("✅ Integração encontrada:", integration);
 
+      // Buscar token de acesso
       const { data: userIntegration, error: userIntegrationError } = await supabase
         .from("user_integrations")
-        .select("access_token")
+        .select("access_token, token_expires_at")
         .eq("integration_id", integration.id)
         .maybeSingle();
 
@@ -53,8 +55,18 @@ export const useTinyProducts = () => {
         throw new Error("Token de acesso não encontrado");
       }
 
-      console.log("✅ Token de acesso encontrado");
+      // Verificar se o token expirou
+      if (userIntegration.token_expires_at) {
+        const expiresAt = new Date(userIntegration.token_expires_at);
+        if (expiresAt < new Date()) {
+          console.error("❌ Token de acesso expirado");
+          throw new Error("Token de acesso expirado. Por favor, reconecte sua conta.");
+        }
+      }
 
+      console.log("✅ Token de acesso válido encontrado");
+
+      // Chamar Edge Function
       console.log("🔄 Chamando Edge Function tiny-products...");
       const { data, error: functionError } = await supabase.functions.invoke('tiny-products', {
         body: { access_token: userIntegration.access_token }
