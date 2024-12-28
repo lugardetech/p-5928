@@ -16,6 +16,7 @@ interface TinyErpSettings {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
+  [key: string]: string; // Add index signature
 }
 
 // Type guard para verificar se o objeto settings tem a estrutura correta
