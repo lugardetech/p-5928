@@ -40,17 +40,6 @@ export function ProductForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validar se uma categoria foi selecionada
-    if (!formData.category_id) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao cadastrar produto",
-        description: "Por favor, selecione uma categoria.",
-      });
-      return;
-    }
-
     setIsLoading(true);
 
     try {
@@ -81,7 +70,7 @@ export function ProductForm() {
         cost_price: formData.cost_price ? parseFloat(formData.cost_price) : null,
         stock_quantity: parseInt(formData.stock_quantity),
         min_stock_quantity: formData.min_stock_quantity ? parseInt(formData.min_stock_quantity) : null,
-        category_id: formData.category_id,
+        category_id: formData.category_id || null,
         image_url: imageUrl,
       });
 
