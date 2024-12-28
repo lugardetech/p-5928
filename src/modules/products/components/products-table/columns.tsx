@@ -44,23 +44,6 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "name",
     header: "Nome",
-    cell: ({ row }) => {
-      return (
-        <Sheet>
-          <SheetTrigger className="text-left hover:underline cursor-pointer">
-            {row.getValue("name")}
-          </SheetTrigger>
-          <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Detalhes do Produto</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6">
-              <ProductDetailsCard product={row.original} />
-            </div>
-          </SheetContent>
-        </Sheet>
-      );
-    },
   },
   {
     accessorKey: "sku",
@@ -112,3 +95,28 @@ export const columns: ColumnDef<Product>[] = [
     },
   },
 ];
+
+// Componente wrapper para a linha da tabela
+export const ProductTableRow = ({ row }: { row: any }) => {
+  return (
+    <Sheet>
+      <SheetTrigger className="contents">
+        <tr className="cursor-pointer hover:bg-muted/50">
+          {row.getVisibleCells().map((cell: any) => (
+            <td key={cell.id} className="p-4">
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </td>
+          ))}
+        </tr>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>Detalhes do Produto</SheetTitle>
+        </SheetHeader>
+        <div className="mt-6">
+          <ProductDetailsCard product={row.original} />
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+};

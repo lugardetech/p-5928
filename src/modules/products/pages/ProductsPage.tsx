@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
-import { columns } from "../components/products-table/columns";
+import { columns, ProductTableRow } from "../components/products-table/columns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductForm } from "@/components/products/ProductForm";
@@ -50,6 +50,7 @@ export default function ProductsPage() {
           columns={columns} 
           data={products || []} 
           isLoading={isLoading}
+          rowComponent={ProductTableRow}
         />
       </Card>
     </div>
