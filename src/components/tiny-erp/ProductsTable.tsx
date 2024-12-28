@@ -27,7 +27,9 @@ export const ProductsTable = () => {
   }
 
   // Obter lista única de unidades para o select
-  const uniqueUnits = Array.from(new Set(products.map(product => product.unidade))).sort();
+  const uniqueUnits = Array.from(
+    new Set(products.map(product => product.unidade || ""))
+  ).sort() as string[];
 
   // Filtrar produtos baseado na busca e unidade selecionada
   const filteredProducts = products.filter(product => {
