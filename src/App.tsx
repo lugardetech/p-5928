@@ -21,8 +21,12 @@ import Login from "@/pages/Login";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import "./App.css";
+
+// Criar instância do QueryClient fora do componente
+const queryClient = new QueryClient();
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -54,45 +58,47 @@ function App() {
   }
 
   return (
-    <Router>
-      {!user ? (
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      ) : (
-        <div className="border-t">
-          <div className="bg-background">
-            <div className="grid lg:grid-cols-5">
-              <Sidebar />
-              <div className="col-span-3 lg:col-span-4 lg:border-l">
-                <div className="px-4 py-6 lg:px-8">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/products" element={<Products />} />
-                    <Route path="/sales" element={<Sales />} />
-                    <Route path="/purchases" element={<Purchases />} />
-                    <Route path="/returns" element={<Returns />} />
-                    <Route path="/support" element={<Support />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/notifications" element={<Notifications />} />
-                    <Route path="/analytics" element={<Analytics />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/transactions" element={<Transactions />} />
-                    <Route path="/integration/tiny-erp" element={<TinyErp />} />
-                    <Route path="/integration/tiny-erp/callback" element={<TinyErpCallback />} />
-                    <Route path="/integration/mercado-livre" element={<MercadoLivre />} />
-                    <Route path="/integration/mercado-livre/callback" element={<MercadoLivreCallback />} />
-                    <Route path="/integration/mercado-livre/claims" element={<MercadoLivreClaims />} />
-                  </Routes>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        {!user ? (
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        ) : (
+          <div className="border-t">
+            <div className="bg-background">
+              <div className="grid lg:grid-cols-5">
+                <Sidebar />
+                <div className="col-span-3 lg:col-span-4 lg:border-l">
+                  <div className="px-4 py-6 lg:px-8">
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/products" element={<Products />} />
+                      <Route path="/sales" element={<Sales />} />
+                      <Route path="/purchases" element={<Purchases />} />
+                      <Route path="/returns" element={<Returns />} />
+                      <Route path="/support" element={<Support />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/notifications" element={<Notifications />} />
+                      <Route path="/analytics" element={<Analytics />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/transactions" element={<Transactions />} />
+                      <Route path="/integration/tiny-erp" element={<TinyErp />} />
+                      <Route path="/integration/tiny-erp/callback" element={<TinyErpCallback />} />
+                      <Route path="/integration/mercado-livre" element={<MercadoLivre />} />
+                      <Route path="/integration/mercado-livre/callback" element={<MercadoLivreCallback />} />
+                      <Route path="/integration/mercado-livre/claims" element={<MercadoLivreClaims />} />
+                    </Routes>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-      <Toaster />
-    </Router>
+        )}
+        <Toaster />
+      </Router>
+    </QueryClientProvider>
   );
 }
 
