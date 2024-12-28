@@ -9,6 +9,13 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Método não permitido' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 405
+    })
+  }
+
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -16,6 +23,13 @@ serve(async (req) => {
     )
 
     const { code, userId, integrationId } = await req.json()
+
+    if (!code || !userId || !integrationId) {
+      return new Response(JSON.stringify({ error: 'Campos obrigatórios faltando' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400
+      })
+    }
 
     console.log(`=== Iniciando troca de tokens ===`)
     console.log(`=== Código de autorização: ${code} ===`)
@@ -71,10 +85,17 @@ serve(async (req) => {
       throw new Error('Credenciais incompletas')
     }
 
+    try {
+      new URL(redirect_uri)
+    } catch (err) {
+      console.error('❌ redirect_uri inválido:', redirect_uri)
+      throw new Error('O redirect_uri deve ser uma URL válida')
+    }
+
     console.log('✅ Iniciando troca de tokens com o Mercado Livre')
 
     // Trocar código por tokens usando a API do Mercado Livre
-    const tokenResponse = await fetch('https://api.mercadolibre.com/oauth/token', {
+    const tokenResponse = await fetch('https://api.mercadolivre.com.br/oauth/token', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -90,21 +111,56 @@ serve(async (req) => {
     })
 
     if (!tokenResponse.ok) {
-      const error = await tokenResponse.json()
-      console.error('❌ Erro ao trocar tokens:', error)
-      throw new Error(`Erro ao trocar tokens: ${JSON.stringify(error)}`)
+      let errorData
+      try {
+        errorData = await tokenResponse.json()
+      } catch (err) {
+        console.error('❌ Erro ao parsear resposta do Mercado Livre:', err)
+        throw new Error('Erro ao processar a resposta do Mercado Livre')
+      }
+
+      console.error('❌ Erro na resposta do Mercado Livre:', errorData)
+      
+      let errorMessage = 'Erro ao trocar tokens'
+      
+      switch(errorData.error) {
+        case 'invalid_client':
+          errorMessage = 'Credenciais do aplicativo (client_id/client_secret) inválidas'
+          break
+        case 'invalid_grant':
+          errorMessage = 'Código de autorização inválido ou expirado'
+          break
+        case 'invalid_request':
+          errorMessage = 'Requisição inválida - verifique os parâmetros enviados'
+          break
+        default:
+          errorMessage = `Erro: ${errorData.error_description || errorData.message || JSON.stringify(errorData)}`
+      }
+      
+      throw new Error(errorMessage)
     }
 
     const tokens = await tokenResponse.json()
-    console.log('✅ Tokens obtidos com sucesso:', tokens)
+
+    if (!tokens.access_token || !tokens.refresh_token || !tokens.expires_in || !tokens.token_type) {
+      console.error('❌ Resposta do Mercado Livre incompleta:', tokens)
+      throw new Error('Resposta da API do Mercado Livre está incompleta')
+    }
+
+    console.log('✅ Tokens obtidos com sucesso:', {
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_in: tokens.expires_in,
+      token_type: tokens.token_type
+    })
 
     // Calcular data de expiração dos tokens
     const now = new Date()
     const tokenExpiresAt = new Date(now.getTime() + tokens.expires_in * 1000)
-    const refreshTokenExpiresAt = new Date(now.getTime() + tokens.refresh_token_expires_in * 1000)
+    const refreshTokenExpiresAt = new Date(now.getTime() + 15552000 * 1000) // 6 meses
 
     // Salvar tokens no banco
-    const { error: updateError } = await supabaseClient
+    const { data: updatedIntegration, error: updateError } = await supabaseClient
       .from('user_integrations')
       .update({
         access_token: tokens.access_token,
@@ -113,10 +169,12 @@ serve(async (req) => {
         refresh_token_expires_at: refreshTokenExpiresAt.toISOString(),
       })
       .eq('id', userIntegration.id)
+      .select()
+      .single()
 
-    if (updateError) {
+    if (updateError || !updatedIntegration) {
       console.error('❌ Erro ao salvar tokens:', updateError)
-      throw updateError
+      throw updateError || new Error('Erro ao salvar tokens no banco de dados')
     }
 
     console.log('✅ Tokens salvos com sucesso')
