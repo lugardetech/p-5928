@@ -16,6 +16,7 @@ import SalesPage from "@/modules/sales/pages/SalesPage";
 import PurchasesPage from "@/modules/purchases/pages/PurchasesPage";
 import SupportPage from "@/modules/support/pages/SupportPage";
 import ReturnsPage from "@/modules/returns/pages/ReturnsPage";
+import ProductsPage from "@/modules/products/pages/ProductsPage";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ function App() {
               <Route path="/purchases" element={<PurchasesPage />} />
               <Route path="/support" element={<SupportPage />} />
               <Route path="/returns" element={<ReturnsPage />} />
+              <Route path="/products" element={<ProductsPage />} />
             </Routes>
           </main>
           <Toaster />
