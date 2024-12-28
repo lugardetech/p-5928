@@ -17,11 +17,31 @@ serve(async (req) => {
 
     const { code, userId, integrationId } = await req.json()
 
-    console.log(`=== Recebido código de autorização: ${code} ===`)
-    console.log(`=== Para usuário: ${userId} ===`)
-    console.log(`=== Para integração: ${integrationId} ===`)
+    console.log(`=== Iniciando troca de tokens ===`)
+    console.log(`=== Código de autorização: ${code} ===`)
+    console.log(`=== ID do usuário: ${userId} ===`)
+    console.log(`=== ID da integração: ${integrationId} ===`)
 
-    // Buscar credenciais da integração
+    // Primeiro, verificar se a integração existe
+    const { data: integration, error: integrationError } = await supabaseClient
+      .from('integrations')
+      .select('*')
+      .eq('id', integrationId)
+      .maybeSingle()
+
+    if (integrationError) {
+      console.error('❌ Erro ao buscar integração:', integrationError)
+      throw integrationError
+    }
+
+    if (!integration) {
+      console.error('❌ Integração não encontrada no banco de dados')
+      throw new Error('Integração não encontrada no banco de dados')
+    }
+
+    console.log('✅ Integração encontrada:', integration)
+
+    // Buscar credenciais da integração do usuário
     const { data: userIntegration, error: fetchError } = await supabaseClient
       .from('user_integrations')
       .select('*')
@@ -30,16 +50,23 @@ serve(async (req) => {
       .maybeSingle()
 
     if (fetchError) {
-      console.error('❌ Erro ao buscar integração:', fetchError)
+      console.error('❌ Erro ao buscar integração do usuário:', fetchError)
       throw fetchError
     }
 
     if (!userIntegration) {
-      console.error('❌ Integração não encontrada')
-      throw new Error('Integração não encontrada')
+      console.error('❌ Integração do usuário não encontrada')
+      throw new Error('Integração do usuário não encontrada')
     }
 
+    console.log('✅ Integração do usuário encontrada:', userIntegration)
+
     const { client_id, client_secret, redirect_uri } = userIntegration.settings
+
+    if (!client_id || !client_secret || !redirect_uri) {
+      console.error('❌ Credenciais incompletas:', { client_id, client_secret, redirect_uri })
+      throw new Error('Credenciais incompletas')
+    }
 
     // Trocar código por tokens
     const tokenResponse = await fetch('https://api.mercadolibre.com/oauth/token', {

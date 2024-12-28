@@ -32,19 +32,24 @@ export default function MercadoLivreCallback() {
           throw new Error("Usuário não autenticado");
         }
 
+        // Buscar a integração do Mercado Livre
         const { data: integration, error: integrationError } = await supabase
           .from("integrations")
-          .select("id")
+          .select("*")
           .eq("name", "mercado_livre")
           .maybeSingle();
 
         if (integrationError) {
+          console.error("❌ Erro ao buscar integração:", integrationError);
           throw integrationError;
         }
 
         if (!integration) {
+          console.error("❌ Integração não encontrada");
           throw new Error("Integração não encontrada");
         }
+
+        console.log("✅ Integração encontrada:", integration);
 
         const { data, error } = await supabase.functions.invoke("mercadolivre-token-exchange", {
           body: { 
@@ -54,7 +59,10 @@ export default function MercadoLivreCallback() {
           }
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error("❌ Erro ao trocar tokens:", error);
+          throw error;
+        }
 
         console.log("✅ Tokens obtidos com sucesso:", data);
 
@@ -67,7 +75,7 @@ export default function MercadoLivreCallback() {
         toast({
           variant: "destructive",
           title: "Erro na autenticação",
-          description: "Ocorreu um erro ao conectar sua conta do Mercado Livre.",
+          description: "Ocorreu um erro ao conectar sua conta do Mercado Livre. Por favor, tente novamente.",
         });
       }
 
