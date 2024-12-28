@@ -73,20 +73,20 @@ serve(async (req) => {
 
     console.log('✅ Iniciando troca de tokens com o Mercado Livre')
 
-    // Trocar código por tokens
+    // Trocar código por tokens usando a API do Mercado Livre
     const tokenResponse = await fetch('https://api.mercadolibre.com/oauth/token', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         client_id,
         client_secret,
         code,
-        redirect_uri,
-      }),
+        redirect_uri
+      })
     })
 
     if (!tokenResponse.ok) {
@@ -96,7 +96,7 @@ serve(async (req) => {
     }
 
     const tokens = await tokenResponse.json()
-    console.log('✅ Tokens obtidos com sucesso')
+    console.log('✅ Tokens obtidos com sucesso:', tokens)
 
     // Calcular data de expiração dos tokens
     const now = new Date()
