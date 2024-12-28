@@ -41,15 +41,16 @@ serve(async (req) => {
 
     console.log("✅ Integração encontrada");
 
-    // Buscar reclamações na API do Mercado Livre
-    const response = await fetch('https://api.mercadolibre.com/claims/search/recent', {
+    // Buscar reclamações na API do Mercado Livre usando o endpoint correto
+    const response = await fetch('https://api.mercadolibre.com/post-purchase/v1/claims/search?status=opened', {
       headers: {
         'Authorization': `Bearer ${userIntegration.access_token}`,
       },
     });
 
     if (!response.ok) {
-      console.error("❌ Erro na API do Mercado Livre:", await response.text());
+      const errorText = await response.text();
+      console.error("❌ Erro na API do Mercado Livre:", errorText);
       throw new Error(`Erro na API do Mercado Livre: ${response.statusText}`);
     }
 
