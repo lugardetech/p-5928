@@ -16,6 +16,7 @@ import TinyErp from "@/pages/TinyErp";
 import TinyErpCallback from "@/pages/TinyErpCallback";
 import MercadoLivre from "@/pages/MercadoLivre";
 import MercadoLivreCallback from "@/pages/MercadoLivreCallback";
+import MercadoLivreClaims from "@/modules/mercadolivre/pages/ClaimsPage";
 import Login from "@/pages/Login";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,6 +83,7 @@ function App() {
                     <Route path="/integration/tiny-erp/callback" element={<TinyErpCallback />} />
                     <Route path="/integration/mercado-livre" element={<MercadoLivre />} />
                     <Route path="/integration/mercado-livre/callback" element={<MercadoLivreCallback />} />
+                    <Route path="/integration/mercado-livre/claims" element={<MercadoLivreClaims />} />
                   </Routes>
                 </div>
               </div>
