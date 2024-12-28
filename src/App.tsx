@@ -1,54 +1,57 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Sidebar } from "@/components/Sidebar";
 import Index from "@/pages/Index";
-import Analytics from "@/pages/Analytics";
-import Notifications from "@/pages/Notifications";
+import Products from "@/modules/products/pages/ProductsPage";
+import Sales from "@/modules/sales/pages/SalesPage";
+import Purchases from "@/modules/purchases/pages/PurchasesPage";
+import Returns from "@/modules/returns/pages/ReturnsPage";
+import Support from "@/modules/support/pages/SupportPage";
 import Settings from "@/pages/Settings";
+import Notifications from "@/pages/Notifications";
+import Analytics from "@/pages/Analytics";
 import Profile from "@/pages/Profile";
-import Login from "@/pages/Login";
+import Transactions from "@/pages/Transactions";
 import TinyErp from "@/pages/TinyErp";
 import TinyErpCallback from "@/pages/TinyErpCallback";
-import Sidebar from "@/components/Sidebar";
+import MercadoLivre from "@/pages/MercadoLivre";
+import MercadoLivreCallback from "@/pages/MercadoLivreCallback";
 
-// Módulos
-import SalesPage from "@/modules/sales/pages/SalesPage";
-import PurchasesPage from "@/modules/purchases/pages/PurchasesPage";
-import SupportPage from "@/modules/support/pages/SupportPage";
-import ReturnsPage from "@/modules/returns/pages/ReturnsPage";
-import ProductsPage from "@/modules/products/pages/ProductsPage";
-
-const queryClient = new QueryClient();
+import "./App.css";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 ml-64 p-8">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/integration/tiny-erp" element={<TinyErp />} />
-              <Route path="/integration/tiny-erp/callback" element={<TinyErpCallback />} />
-              
-              {/* Rotas dos módulos */}
-              <Route path="/sales" element={<SalesPage />} />
-              <Route path="/purchases" element={<PurchasesPage />} />
-              <Route path="/support" element={<SupportPage />} />
-              <Route path="/returns" element={<ReturnsPage />} />
-              <Route path="/products" element={<ProductsPage />} />
-            </Routes>
-          </main>
-          <Toaster />
+    <Router>
+      <div className="border-t">
+        <div className="bg-background">
+          <div className="grid lg:grid-cols-5">
+            <Sidebar />
+            <div className="col-span-3 lg:col-span-4 lg:border-l">
+              <div className="px-4 py-6 lg:px-8">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/sales" element={<Sales />} />
+                  <Route path="/purchases" element={<Purchases />} />
+                  <Route path="/returns" element={<Returns />} />
+                  <Route path="/support" element={<Support />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/notifications" element={<Notifications />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/transactions" element={<Transactions />} />
+                  <Route path="/integration/tiny-erp" element={<TinyErp />} />
+                  <Route path="/integration/tiny-erp/callback" element={<TinyErpCallback />} />
+                  <Route path="/integration/mercado-livre" element={<MercadoLivre />} />
+                  <Route path="/integration/mercado-livre/callback" element={<MercadoLivreCallback />} />
+                </Routes>
+              </div>
+            </div>
+          </div>
         </div>
-      </Router>
-    </QueryClientProvider>
+      </div>
+      <Toaster />
+    </Router>
   );
 }
 
