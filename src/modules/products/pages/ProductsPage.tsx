@@ -4,9 +4,11 @@ import { columns, ProductTableRow } from "../components/products-table/columns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductForm } from "@/components/products/ProductForm";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function ProductsPage() {
-  const { data: products, isLoading } = useQuery({
+  const { toast } = useToast();
+  const { data: products, isLoading, refetch } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
       console.log("=== Buscando produtos ===");
@@ -35,6 +37,31 @@ export default function ProductsPage() {
     }
   });
 
+  const handleDeleteSelected = async (selectedProducts: any[]) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .in('id', selectedProducts.map(p => p.id));
+
+      if (error) throw error;
+
+      toast({
+        title: "Produtos excluídos",
+        description: `${selectedProducts.length} produtos foram excluídos com sucesso.`,
+      });
+
+      refetch();
+    } catch (error) {
+      console.error("Erro ao excluir produtos:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao excluir produtos",
+        description: "Ocorreu um erro ao tentar excluir os produtos selecionados.",
+      });
+    }
+  };
+
   return (
     <div className="space-y-8">
       <header className="flex items-center justify-between">
@@ -51,6 +78,7 @@ export default function ProductsPage() {
           data={products || []} 
           isLoading={isLoading}
           rowComponent={ProductTableRow}
+          onDeleteSelected={handleDeleteSelected}
         />
       </Card>
     </div>

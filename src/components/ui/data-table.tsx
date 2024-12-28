@@ -6,10 +6,10 @@ import {
   getCoreRowModel,
   useReactTable,
   getPaginationRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
   SortingState,
+  getSortedRowModel,
   ColumnFiltersState,
+  getFilteredRowModel,
 } from "@tanstack/react-table";
 
 import {
@@ -20,27 +20,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Skeleton } from "./skeleton";
+import { Trash } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   isLoading?: boolean;
   rowComponent?: React.ComponentType<{ row: any }>;
+  onDeleteSelected?: (selectedRows: TData[]) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  isLoading = false,
+  isLoading,
   rowComponent: RowComponent,
+  onDeleteSelected,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
     data,
@@ -51,63 +53,47 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
+      rowSelection,
+    },
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
     },
   });
 
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-[250px]" />
-          <Skeleton className="h-8 w-[150px]" />
-        </div>
-
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map(() => (
-                    <TableHead key={Math.random()}>
-                      <Skeleton className="h-4 w-[100px]" />
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {Array.from({ length: 5 }).map((_, idx) => (
-                <TableRow key={idx}>
-                  {Array.from({ length: columns.length }).map((_, idx) => (
-                    <TableCell key={idx}>
-                      <Skeleton className="h-4 w-[100px]" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    );
+    return <div>Carregando...</div>;
   }
 
+  const selectedRows = table.getFilteredSelectedRowModel().rows.map(row => row.original);
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
+    <div>
+      <div className="flex items-center justify-between py-4">
         <Input
-          placeholder="Filtrar..."
+          placeholder="Filtrar produtos..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
+        {selectedRows.length > 0 && onDeleteSelected && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => onDeleteSelected(selectedRows)}
+          >
+            <Trash className="h-4 w-4 mr-2" />
+            Excluir Selecionados ({selectedRows.length})
+          </Button>
+        )}
       </div>
-
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -130,10 +116,11 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                RowComponent ? (
-                  <RowComponent key={row.id} row={row} />
-                ) : (
+              table.getRowModel().rows.map((row) => {
+                if (RowComponent) {
+                  return <RowComponent key={row.id} row={row} />;
+                }
+                return (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
@@ -147,8 +134,8 @@ export function DataTable<TData, TValue>({
                       </TableCell>
                     ))}
                   </TableRow>
-                )
-              ))
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell
@@ -162,8 +149,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-
-      <div className="flex items-center justify-end space-x-2">
+      <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
           size="sm"

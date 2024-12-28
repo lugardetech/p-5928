@@ -3,9 +3,13 @@
 import { Badge } from "@/components/ui/badge";
 import { ColumnDef, flexRender } from "@tanstack/react-table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Package } from "lucide-react";
+import { Package, Edit, Trash } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ProductDetailsCard } from "@/components/products/ProductDetailsCard";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { ProductForm } from "@/components/products/ProductForm";
+import { useState } from "react";
 
 interface Product {
   id: string;
@@ -21,6 +25,26 @@ interface Product {
 }
 
 export const columns: ColumnDef<Product>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Selecionar todos"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Selecionar linha"
+        onClick={(e) => e.stopPropagation()}
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "image_url",
     header: "Imagem",
@@ -98,6 +122,8 @@ export const columns: ColumnDef<Product>[] = [
 
 // Componente wrapper para a linha da tabela
 export const ProductTableRow = ({ row }: { row: any }) => {
+  const [isEditing, setIsEditing] = useState(false);
+
   return (
     <Dialog>
       <DialogTrigger className="contents">
@@ -111,10 +137,26 @@ export const ProductTableRow = ({ row }: { row: any }) => {
       </DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Detalhes do Produto</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            <span>Detalhes do Produto</span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
+            </div>
+          </DialogTitle>
         </DialogHeader>
         <div className="mt-6">
-          <ProductDetailsCard product={row.original} />
+          {isEditing ? (
+            <ProductForm existingProduct={row.original} onSuccess={() => setIsEditing(false)} />
+          ) : (
+            <ProductDetailsCard product={row.original} />
+          )}
         </div>
       </DialogContent>
     </Dialog>
