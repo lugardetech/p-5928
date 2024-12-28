@@ -17,6 +17,10 @@ serve(async (req) => {
     console.log("=== Buscando reclamações do Mercado Livre ===");
     console.log("User ID:", userId);
 
+    if (!userId) {
+      throw new Error("User ID não fornecido");
+    }
+
     // Buscar integração do usuário
     const { data: userIntegration, error: integrationError } = await supabase
       .from('user_integrations')
@@ -25,29 +29,34 @@ serve(async (req) => {
       .eq('integration_id', 'ae8f644a-bf1a-42ef-a3aa-6b3887971ef9')
       .single();
 
-    if (integrationError || !userIntegration) {
+    if (integrationError) {
       console.error("❌ Erro ao buscar integração:", integrationError);
-      throw new Error("Integração não encontrada");
+      throw new Error("Erro ao buscar integração");
+    }
+
+    if (!userIntegration?.access_token) {
+      console.error("❌ Token de acesso não encontrado");
+      throw new Error("Token de acesso não encontrado");
     }
 
     console.log("✅ Integração encontrada");
 
     // Buscar reclamações na API do Mercado Livre
-    const response = await fetch('https://api.mercadolibre.com/claims/search', {
+    const response = await fetch('https://api.mercadolibre.com/claims/search/recent', {
       headers: {
         'Authorization': `Bearer ${userIntegration.access_token}`,
       },
     });
 
     if (!response.ok) {
-      console.error("❌ Erro na API do Mercado Livre:", response.statusText);
+      console.error("❌ Erro na API do Mercado Livre:", await response.text());
       throw new Error(`Erro na API do Mercado Livre: ${response.statusText}`);
     }
 
     const claims = await response.json();
-    console.log("✅ Reclamações obtidas com sucesso");
+    console.log("✅ Reclamações obtidas com sucesso:", claims);
 
-    return new Response(JSON.stringify(claims), {
+    return new Response(JSON.stringify(claims.results || []), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
