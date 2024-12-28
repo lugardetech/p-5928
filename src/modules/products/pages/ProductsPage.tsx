@@ -3,7 +3,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns, ProductTableRow } from "../components/products-table/columns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ProductForm } from "@/components/products/ProductForm";
+import { ProductForm } from "../components/ProductForm";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProductsPage() {

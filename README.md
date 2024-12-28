@@ -36,6 +36,25 @@ Este é um sistema de gestão empresarial desenvolvido com tecnologias modernas 
   - Tiny ERP
   - Outros sistemas via API
 
+## Estrutura do Projeto
+
+```
+src/
+├── components/          # Componentes globais reutilizáveis
+│   └── ui/             # Componentes UI base (shadcn)
+├── modules/            # Módulos da aplicação
+│   ├── products/       # Módulo de produtos
+│   │   ├── components/ # Componentes específicos de produtos
+│   │   └── pages/      # Páginas do módulo
+│   ├── sales/         # Módulo de vendas
+│   ├── purchases/     # Módulo de compras
+│   ├── returns/       # Módulo de devoluções
+│   ├── support/       # Módulo de suporte
+│   └── integrations/  # Módulo de integrações
+├── lib/               # Utilitários e configurações
+└── integrations/      # Integrações com serviços externos
+```
+
 ## Como Executar o Projeto
 
 1. **Instalação das Dependências**:
@@ -52,15 +71,6 @@ npm run dev
 ```bash
 npm run build
 ```
-
-## Estrutura do Projeto
-
-- `/src/components`: Componentes reutilizáveis
-- `/src/pages`: Páginas da aplicação
-- `/src/modules`: Módulos específicos de funcionalidade
-- `/src/integrations`: Integrações com serviços externos
-- `/src/hooks`: Hooks personalizados
-- `/src/lib`: Utilitários e configurações
 
 ## Contribuição
 
