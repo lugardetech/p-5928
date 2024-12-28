@@ -27,7 +27,7 @@ export const columns: ColumnDef<Product>[] = [
       return (
         <Avatar>
           <AvatarImage 
-            src={imageUrl ? `${process.env.VITE_SUPABASE_URL}/storage/v1/object/public/product-images/${imageUrl}` : undefined} 
+            src={imageUrl ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/product-images/${imageUrl}` : undefined} 
             alt={row.getValue("name")} 
           />
           <AvatarFallback>
