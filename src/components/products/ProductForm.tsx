@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +17,7 @@ import { ProductBasicInfo } from "./form/ProductBasicInfo";
 import { ProductPricing } from "./form/ProductPricing";
 import { ProductStock } from "./form/ProductStock";
 import { ProductImage } from "./form/ProductImage";
+import { ProductCategory } from "./form/ProductCategory";
 import { FormData } from "./form/types";
 
 export function ProductForm() {
@@ -35,6 +34,7 @@ export function ProductForm() {
     cost_price: "",
     stock_quantity: "",
     min_stock_quantity: "",
+    category_id: "",
     image: null,
   });
 
@@ -65,6 +65,7 @@ export function ProductForm() {
         cost_price: formData.cost_price ? parseFloat(formData.cost_price) : null,
         stock_quantity: parseInt(formData.stock_quantity),
         min_stock_quantity: formData.min_stock_quantity ? parseInt(formData.min_stock_quantity) : null,
+        category_id: formData.category_id,
         image_url: imageUrl,
       });
 
@@ -84,6 +85,7 @@ export function ProductForm() {
         cost_price: "",
         stock_quantity: "",
         min_stock_quantity: "",
+        category_id: "",
         image: null,
       });
 
@@ -122,6 +124,7 @@ export function ProductForm() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <ProductBasicInfo formData={formData} setFormData={setFormData} />
+            <ProductCategory formData={formData} setFormData={setFormData} />
             <ProductPricing formData={formData} setFormData={setFormData} />
             <ProductStock formData={formData} setFormData={setFormData} />
             <ProductImage formData={formData} setFormData={setFormData} />

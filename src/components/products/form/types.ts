@@ -6,5 +6,6 @@ export interface FormData {
   cost_price: string;
   stock_quantity: string;
   min_stock_quantity: string;
+  category_id: string;
   image: File | null;
 }
