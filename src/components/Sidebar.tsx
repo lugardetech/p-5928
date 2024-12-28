@@ -1,11 +1,14 @@
-import { Home, PieChart, Settings, User, CreditCard, Bell, Grid, Building } from "lucide-react";
+import { Home, PieChart, Settings, User, CreditCard, Bell, Grid, Building, ShoppingCart, ShoppingBag, HeadphonesIcon, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/" },
   { icon: PieChart, label: "Analytics", path: "/analytics" },
-  { icon: CreditCard, label: "Transactions", path: "/transactions" },
+  { icon: ShoppingCart, label: "Vendas", path: "/sales" },
+  { icon: ShoppingBag, label: "Compras", path: "/purchases" },
+  { icon: HeadphonesIcon, label: "Atendimento", path: "/support" },
+  { icon: RotateCcw, label: "Devoluções", path: "/returns" },
   { icon: Bell, label: "Notifications", path: "/notifications" },
   {
     icon: Grid,
