@@ -51,7 +51,7 @@ export function ProductForm() {
         .from("products")
         .select("id")
         .eq("sku", formData.sku)
-        .single();
+        .maybeSingle();
 
       if (existingProduct) {
         toast({
