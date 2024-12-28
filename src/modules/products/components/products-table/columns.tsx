@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { ColumnDef } from "@tanstack/react-table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Package } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ProductDetailsCard } from "@/components/products/ProductDetailsCard";
 
 interface Product {
   id: string;
@@ -25,19 +27,15 @@ export const columns: ColumnDef<Product>[] = [
     cell: ({ row }) => {
       const imageUrl = row.getValue("image_url") as string | null;
       
-      // Construindo a URL completa apenas se houver uma image_url
-      const fullImageUrl = imageUrl 
-        ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/product-images/${imageUrl}`
-        : null;
-
       return (
-        <Avatar>
+        <Avatar className="h-12 w-12">
           <AvatarImage 
-            src={fullImageUrl} 
+            src={imageUrl || ""} 
             alt={row.getValue("name")} 
+            className="object-cover"
           />
           <AvatarFallback>
-            <Package className="h-4 w-4" />
+            <Package className="h-6 w-6" />
           </AvatarFallback>
         </Avatar>
       );
@@ -46,6 +44,23 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "name",
     header: "Nome",
+    cell: ({ row }) => {
+      return (
+        <Sheet>
+          <SheetTrigger className="text-left hover:underline cursor-pointer">
+            {row.getValue("name")}
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Detalhes do Produto</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6">
+              <ProductDetailsCard product={row.original} />
+            </div>
+          </SheetContent>
+        </Sheet>
+      );
+    },
   },
   {
     accessorKey: "sku",
@@ -54,6 +69,10 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "category.name",
     header: "Categoria",
+    cell: ({ row }) => {
+      const category = row.getValue("category.name");
+      return category || "Sem categoria";
+    },
   },
   {
     accessorKey: "price",
