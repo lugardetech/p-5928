@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { IntegrationError, handleMercadoLivreError } from '../_shared/errors.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { code } = await req.json();
+    const { code, userId, integrationId } = await req.json();
     console.log("=== Iniciando troca de código por tokens ===");
     console.log("Código recebido:", code);
 
@@ -39,27 +40,15 @@ serve(async (req) => {
     console.log("✅ Usuário encontrado:", user.id);
 
     // Buscar integração e credenciais
-    const { data: integration, error: integrationError } = await supabaseAdmin
-      .from('integrations')
-      .select('id')
-      .eq('name', 'mercado_livre') // Updated integration name
-      .single();
-
-    if (integrationError || !integration) {
-      console.error("❌ Erro ao buscar integração:", integrationError);
-      throw new Error('Integração não encontrada');
-    }
-    console.log("✅ Integração encontrada:", integration.id);
-
-    const { data: userIntegration, error: userIntegrationError } = await supabaseAdmin
+    const { data: userIntegration, error: fetchError } = await supabaseAdmin
       .from('user_integrations')
       .select('settings')
-      .eq('user_id', user.id)
-      .eq('integration_id', integration.id)
+      .eq('user_id', userId)
+      .eq('integration_id', integrationId)
       .single();
 
-    if (userIntegrationError || !userIntegration) {
-      console.error("❌ Erro ao buscar credenciais:", userIntegrationError);
+    if (fetchError) {
+      console.error("❌ Erro ao buscar credenciais:", fetchError);
       throw new Error('Credenciais não encontradas');
     }
     console.log("✅ Credenciais encontradas");
@@ -72,7 +61,7 @@ serve(async (req) => {
 
     // Trocar código por tokens usando a URL correta do Mercado Libre
     console.log("🔄 Iniciando troca do código por tokens...");
-    const tokenEndpoint = "https://api.mercadolibre.com/oauth/token"; // Mercado Libre token endpoint
+    const tokenEndpoint = "https://api.mercadolibre.com/oauth/token";
     const tokenResponse = await fetch(tokenEndpoint, {
       method: "POST",
       headers: {
@@ -129,8 +118,8 @@ serve(async (req) => {
         refresh_token_expires_at: refreshTokenExpiresAt?.toISOString(),
         status: true,
       })
-      .eq('user_id', user.id)
-      .eq('integration_id', integration.id);
+      .eq('user_id', userId)
+      .eq('integration_id', integrationId);
 
     if (updateError) {
       console.error("❌ Erro ao salvar tokens:", updateError);
