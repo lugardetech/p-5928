@@ -2,13 +2,15 @@ import { Card } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "../components/claims-table/columns";
 import { useMercadoLivreClaims } from "@/hooks/mercadolivre/useMercadoLivreClaims";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function ClaimsPage() {
   const { data: claims, isLoading, error } = useMercadoLivreClaims();
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[200px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
@@ -17,10 +19,13 @@ export default function ClaimsPage() {
   if (error) {
     return (
       <div className="p-4">
-        <Card className="p-6 bg-red-50">
-          <h2 className="text-lg font-semibold text-red-700">Erro ao carregar reclamações</h2>
-          <p className="text-red-600">{error.message}</p>
-        </Card>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Erro</AlertTitle>
+          <AlertDescription>
+            {error instanceof Error ? error.message : "Erro ao carregar reclamações"}
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
