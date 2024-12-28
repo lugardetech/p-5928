@@ -1,38 +1,31 @@
 export interface MercadoLivreClaim {
-  id: string;
-  date_created: string;
-  date_closed?: string;
-  title: string;
+  id: number;
+  resource_id: number;
   status: string;
-  reason: string;
-  item: {
-    id: string;
-    title: string;
-    seller_id: string;
-    buyer_id: string;
-  };
-  buyer: {
-    id: string;
-    nickname: string;
-  };
-  seller: {
-    id: string;
-    nickname: string;
-  };
-  messages?: ClaimMessage[];
-}
-
-export interface ClaimMessage {
-  id: string;
+  type: string;
+  stage: string;
+  parent_id: string | null;
+  resource: string;
+  reason_id: string;
+  fulfilled: boolean;
+  quantity_type: string;
+  players: {
+    role: string;
+    type: string;
+    user_id: number;
+    available_actions: string[];
+  }[];
+  resolution: any;
+  site_id: string;
   date_created: string;
-  from: {
-    user_id: string;
-    name: string;
-  };
-  message: string;
+  last_updated: string;
 }
 
 export interface ClaimResponse {
-  message: string;
-  status: string;
+  paging: {
+    total: number;
+    offset: number;
+    limit: number;
+  };
+  data: MercadoLivreClaim[];
 }

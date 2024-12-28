@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MercadoLivreClaim } from "@/types/mercadolivre/claims";
-import { useToast } from "@/components/ui/use-toast";
+import { ClaimResponse, MercadoLivreClaim } from "@/types/mercadolivre/claims";
+import { useToast } from "@/hooks/use-toast";
 
 export function useMercadoLivreClaims() {
   const { toast } = useToast();
@@ -18,7 +18,7 @@ export function useMercadoLivreClaims() {
           throw new Error("Usuário não autenticado");
         }
 
-        const { data, error } = await supabase.functions.invoke("mercadolivre-claims", {
+        const { data, error } = await supabase.functions.invoke<ClaimResponse>("mercadolivre-claims", {
           body: { userId: user.id }
         });
 
@@ -33,7 +33,7 @@ export function useMercadoLivreClaims() {
         }
 
         console.log("✅ Reclamações obtidas com sucesso:", data);
-        return data?.results || [];
+        return data?.data || [];
       } catch (error) {
         console.error("❌ Erro ao buscar reclamações:", error);
         toast({

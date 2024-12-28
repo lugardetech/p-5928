@@ -15,26 +15,17 @@ export const columns: ColumnDef<MercadoLivreClaim>[] = [
     },
   },
   {
-    accessorKey: "title",
-    header: "Título",
+    accessorKey: "resource_id",
+    header: "ID do Pedido",
     cell: ({ row }) => {
-      return <div className="font-medium">{row.getValue("title")}</div>;
+      return <div className="font-medium">{row.getValue("resource_id")}</div>;
     },
   },
   {
-    accessorKey: "buyer.nickname",
-    header: "Comprador",
+    accessorKey: "reason_id",
+    header: "Motivo",
     cell: ({ row }) => {
-      const claim = row.original;
-      return <div>{claim.buyer?.nickname || "N/A"}</div>;
-    },
-  },
-  {
-    accessorKey: "item.title",
-    header: "Produto",
-    cell: ({ row }) => {
-      const claim = row.original;
-      return <div>{claim.item?.title || "N/A"}</div>;
+      return <div>{row.getValue("reason_id")}</div>;
     },
   },
   {
