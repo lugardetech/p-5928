@@ -45,7 +45,9 @@ src/
 ├── modules/            # Módulos da aplicação
 │   ├── products/       # Módulo de produtos
 │   │   ├── components/ # Componentes específicos de produtos
-│   │   └── pages/      # Páginas do módulo
+│   │   │   ├── form/  # Componentes de formulário
+│   │   │   └── products-table/ # Componentes da tabela
+│   │   └── pages/     # Páginas do módulo
 │   ├── sales/         # Módulo de vendas
 │   ├── purchases/     # Módulo de compras
 │   ├── returns/       # Módulo de devoluções
