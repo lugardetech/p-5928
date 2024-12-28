@@ -10,17 +10,30 @@ interface ProductBasicInfoProps {
 
 export function ProductBasicInfo({ formData, setFormData }: ProductBasicInfoProps) {
   return (
-    <>
-      <div className="grid gap-2">
-        <Label htmlFor="name">Nome</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) =>
-            setFormData({ ...formData, name: e.target.value })
-          }
-          required
-        />
+    <div className="grid gap-4">
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="name">Nome</Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({ ...formData, name: e.target.value })
+            }
+            required
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="sku">SKU</Label>
+          <Input
+            id="sku"
+            value={formData.sku}
+            onChange={(e) =>
+              setFormData({ ...formData, sku: e.target.value })
+            }
+            required
+          />
+        </div>
       </div>
       <div className="grid gap-2">
         <Label htmlFor="description">Descrição</Label>
@@ -32,17 +45,6 @@ export function ProductBasicInfo({ formData, setFormData }: ProductBasicInfoProp
           }
         />
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="sku">SKU</Label>
-        <Input
-          id="sku"
-          value={formData.sku}
-          onChange={(e) =>
-            setFormData({ ...formData, sku: e.target.value })
-          }
-          required
-        />
-      </div>
-    </>
+    </div>
   );
 }

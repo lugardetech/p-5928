@@ -121,7 +121,7 @@ export function ProductForm() {
           Novo Produto
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Novo Produto</DialogTitle>
@@ -129,12 +129,16 @@ export function ProductForm() {
               Preencha os dados do produto abaixo.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-6 py-4">
             <ProductBasicInfo formData={formData} setFormData={setFormData} />
-            <ProductCategory formData={formData} setFormData={setFormData} />
-            <ProductPricing formData={formData} setFormData={setFormData} />
-            <ProductStock formData={formData} setFormData={setFormData} />
-            <ProductImage formData={formData} setFormData={setFormData} />
+            <div className="grid md:grid-cols-2 gap-6">
+              <ProductCategory formData={formData} setFormData={setFormData} />
+              <ProductImage formData={formData} setFormData={setFormData} />
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <ProductPricing formData={formData} setFormData={setFormData} />
+              <ProductStock formData={formData} setFormData={setFormData} />
+            </div>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isLoading}>
