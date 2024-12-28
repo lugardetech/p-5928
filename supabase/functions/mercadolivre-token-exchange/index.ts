@@ -61,12 +61,17 @@ serve(async (req) => {
 
     console.log('✅ Integração do usuário encontrada:', userIntegration)
 
-    const { client_id, client_secret, redirect_uri } = userIntegration.settings
+    const settings = userIntegration.settings as Record<string, unknown>
+    const client_id = settings.client_id as string
+    const client_secret = settings.client_secret as string
+    const redirect_uri = settings.redirect_uri as string
 
     if (!client_id || !client_secret || !redirect_uri) {
       console.error('❌ Credenciais incompletas:', { client_id, client_secret, redirect_uri })
       throw new Error('Credenciais incompletas')
     }
+
+    console.log('✅ Iniciando troca de tokens com o Mercado Livre')
 
     // Trocar código por tokens
     const tokenResponse = await fetch('https://api.mercadolibre.com/oauth/token', {
