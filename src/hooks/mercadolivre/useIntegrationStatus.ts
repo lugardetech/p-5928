@@ -37,12 +37,18 @@ export function useIntegrationStatus() {
 
       console.log("✅ Status da integração obtido:", userIntegration);
 
-      const settings = userIntegration?.settings as MercadoLivreSettings | null;
+      // Fazendo o type casting de forma mais segura
+      const settings = userIntegration?.settings as Record<string, unknown>;
+      const mercadoLivreSettings: MercadoLivreSettings | null = settings ? {
+        client_id: String(settings.client_id || ''),
+        client_secret: String(settings.client_secret || ''),
+        redirect_uri: String(settings.redirect_uri || '')
+      } : null;
 
       return {
-        isConfigured: settings?.client_id && settings?.client_secret,
+        isConfigured: mercadoLivreSettings?.client_id && mercadoLivreSettings?.client_secret,
         isAuthenticated: !!userIntegration?.access_token,
-        settings,
+        settings: mercadoLivreSettings,
       };
     },
   });
