@@ -58,7 +58,7 @@ export async function exchangeToken(settings: Record<string, unknown>, code: str
     throw new IntegrationError('O redirect_uri deve ser uma URL válida');
   }
 
-  const response = await fetch('https://api.mercadolivre.com.br/oauth/token', {
+  const response = await fetch('https://api.mercadolibre.com/oauth/token', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
