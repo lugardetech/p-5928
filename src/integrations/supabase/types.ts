@@ -415,7 +415,7 @@ export type Database = {
       products: {
         Row: {
           active: boolean | null
-          category_id: string
+          category_id: string | null
           cost_price: number | null
           created_at: string
           description: string | null
@@ -432,7 +432,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean | null
-          category_id: string
+          category_id?: string | null
           cost_price?: number | null
           created_at?: string
           description?: string | null
@@ -449,7 +449,7 @@ export type Database = {
         }
         Update: {
           active?: boolean | null
-          category_id?: string
+          category_id?: string | null
           cost_price?: number | null
           created_at?: string
           description?: string | null
