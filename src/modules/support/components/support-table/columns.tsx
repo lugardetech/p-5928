@@ -21,7 +21,7 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const status = row.getValue("status");
       return (
-        <Badge variant={status === "closed" ? "success" : "warning"}>
+        <Badge variant={status === "closed" ? "default" : "secondary"}>
           {status === "closed" ? "Resolvido" : "Em Aberto"}
         </Badge>
       );

@@ -23,7 +23,7 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const status = row.getValue("status");
       return (
-        <Badge variant={status === "completed" ? "success" : "warning"}>
+        <Badge variant={status === "completed" ? "default" : "secondary"}>
           {status === "completed" ? "Concluída" : "Pendente"}
         </Badge>
       );
