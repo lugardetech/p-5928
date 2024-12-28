@@ -150,7 +150,7 @@ export const ProductsTable = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Todas as unidades</SelectItem>
-              {uniqueUnits.map((unit) => (
+              {uniqueUnits.map((unit: string) => (
                 <SelectItem key={unit} value={unit}>
                   {unit}
                 </SelectItem>
