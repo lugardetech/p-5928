@@ -4,7 +4,7 @@ import { columns, ProductTableRow } from "../components/products-table/columns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductForm } from "@/components/products/ProductForm";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProductsPage() {
   const { toast } = useToast();
@@ -41,21 +41,27 @@ export default function ProductsPage() {
     try {
       console.log("🗑️ Tentando excluir produtos:", selectedProducts);
 
+      // Garantir que temos IDs válidos
+      const productIds = selectedProducts.map(p => p.id).filter(Boolean);
+      
+      if (productIds.length === 0) {
+        throw new Error("Nenhum produto válido selecionado para exclusão");
+      }
+
       const { error } = await supabase
         .from('products')
         .delete()
-        .in('id', selectedProducts.map(p => p.original.id));
+        .in('id', productIds);
 
       if (error) {
-        console.error("❌ Erro ao excluir produtos:", error);
         throw error;
       }
 
       console.log("✅ Produtos excluídos com sucesso!");
-
+      
       toast({
         title: "Produtos excluídos",
-        description: `${selectedProducts.length} produtos foram excluídos com sucesso.`,
+        description: `${productIds.length} produtos foram excluídos com sucesso.`,
       });
 
       refetch();
