@@ -38,10 +38,10 @@ export const useTinyProducts = () => {
 
       console.log("✅ Integração encontrada:", integration);
 
-      // Buscar token de acesso
+      // Buscar token de acesso e configurações
       const { data: userIntegration, error: userIntegrationError } = await supabase
         .from("user_integrations")
-        .select("access_token, token_expires_at")
+        .select("access_token, refresh_token, token_expires_at, settings")
         .eq("integration_id", integration.id)
         .maybeSingle();
 
@@ -56,11 +56,42 @@ export const useTinyProducts = () => {
       }
 
       // Verificar se o token expirou
+      let accessToken = userIntegration.access_token;
       if (userIntegration.token_expires_at) {
         const expiresAt = new Date(userIntegration.token_expires_at);
         if (expiresAt < new Date()) {
-          console.error("❌ Token de acesso expirado");
-          throw new Error("Token de acesso expirado. Por favor, reconecte sua conta.");
+          console.log("🔄 Token expirado, tentando renovar...");
+          
+          try {
+            const { data: refreshData, error: refreshError } = await supabase.functions.invoke('tiny-token-refresh', {
+              body: { 
+                refresh_token: userIntegration.refresh_token,
+                client_id: userIntegration.settings.client_id,
+                client_secret: userIntegration.settings.client_secret
+              }
+            });
+
+            if (refreshError) throw refreshError;
+
+            // Atualizar tokens no banco
+            const { error: updateError } = await supabase
+              .from('user_integrations')
+              .update({
+                access_token: refreshData.access_token,
+                refresh_token: refreshData.refresh_token,
+                token_expires_at: refreshData.token_expires_at,
+                refresh_token_expires_at: refreshData.refresh_token_expires_at
+              })
+              .eq('integration_id', integration.id);
+
+            if (updateError) throw updateError;
+
+            console.log("✅ Token renovado com sucesso");
+            accessToken = refreshData.access_token;
+          } catch (error) {
+            console.error("❌ Erro ao renovar token:", error);
+            throw new Error("Erro ao renovar token de acesso. Por favor, reconecte sua conta.");
+          }
         }
       }
 
@@ -69,7 +100,7 @@ export const useTinyProducts = () => {
       // Chamar Edge Function
       console.log("🔄 Chamando Edge Function tiny-products...");
       const { data, error: functionError } = await supabase.functions.invoke('tiny-products', {
-        body: { access_token: userIntegration.access_token }
+        body: { access_token: accessToken }
       });
 
       if (functionError) {
