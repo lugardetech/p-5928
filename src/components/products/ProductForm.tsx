@@ -40,9 +40,23 @@ export function ProductForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar se uma categoria foi selecionada
+    if (!formData.category_id) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao cadastrar produto",
+        description: "Por favor, selecione uma categoria.",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      console.log("=== Iniciando cadastro de produto ===");
+      console.log("Dados do formulário:", formData);
+
       // Upload da imagem
       let imageUrl = null;
       if (formData.image) {
@@ -55,6 +69,8 @@ export function ProductForm() {
         if (uploadError) throw uploadError;
         imageUrl = data.path;
       }
+
+      console.log("URL da imagem:", imageUrl);
 
       // Inserir produto
       const { error } = await supabase.from("products").insert({
@@ -70,6 +86,8 @@ export function ProductForm() {
       });
 
       if (error) throw error;
+
+      console.log("✅ Produto cadastrado com sucesso");
 
       toast({
         title: "Produto adicionado",
@@ -95,7 +113,7 @@ export function ProductForm() {
       // Atualizar lista de produtos
       queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (error) {
-      console.error("Erro ao cadastrar produto:", error);
+      console.error("❌ Erro ao cadastrar produto:", error);
       toast({
         variant: "destructive",
         title: "Erro ao cadastrar produto",
