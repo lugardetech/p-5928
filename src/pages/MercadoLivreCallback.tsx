@@ -32,11 +32,15 @@ export default function MercadoLivreCallback() {
           throw new Error("Usuário não autenticado");
         }
 
-        const { data: integration } = await supabase
+        const { data: integration, error: integrationError } = await supabase
           .from("integrations")
           .select("id")
           .eq("name", "mercado_livre")
           .maybeSingle();
+
+        if (integrationError) {
+          throw integrationError;
+        }
 
         if (!integration) {
           throw new Error("Integração não encontrada");

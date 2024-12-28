@@ -24,13 +24,19 @@ serve(async (req) => {
     // Buscar credenciais da integração
     const { data: userIntegration, error: fetchError } = await supabaseClient
       .from('user_integrations')
-      .select('settings')
+      .select('*')
       .eq('user_id', userId)
       .eq('integration_id', integrationId)
       .maybeSingle()
 
-    if (fetchError || !userIntegration) {
-      throw new Error('Credenciais não encontradas')
+    if (fetchError) {
+      console.error('❌ Erro ao buscar integração:', fetchError)
+      throw fetchError
+    }
+
+    if (!userIntegration) {
+      console.error('❌ Integração não encontrada')
+      throw new Error('Integração não encontrada')
     }
 
     const { client_id, client_secret, redirect_uri } = userIntegration.settings
@@ -74,8 +80,7 @@ serve(async (req) => {
         token_expires_at: tokenExpiresAt.toISOString(),
         refresh_token_expires_at: refreshTokenExpiresAt.toISOString(),
       })
-      .eq('user_id', userId)
-      .eq('integration_id', integrationId)
+      .eq('id', userIntegration.id)
 
     if (updateError) {
       console.error('❌ Erro ao salvar tokens:', updateError)
