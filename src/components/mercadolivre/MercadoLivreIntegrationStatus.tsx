@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useIntegrationStatus } from "@/hooks/mercadolivre/useIntegrationStatus";
 import { CheckCircle, XCircle } from "lucide-react";
+import { MercadoLivreSettings } from "@/types/mercadolivre";
 
 export function MercadoLivreIntegrationStatus() {
   const { data: status, isLoading } = useIntegrationStatus();
@@ -10,14 +11,15 @@ export function MercadoLivreIntegrationStatus() {
   }
 
   const getAuthUrl = () => {
-    if (!status?.settings?.client_id) {
+    const settings = status?.settings as MercadoLivreSettings | undefined;
+    if (!settings?.client_id) {
       return "#";
     }
 
     const params = new URLSearchParams({
       response_type: "code",
-      client_id: status.settings.client_id,
-      redirect_uri: status.settings.redirect_uri,
+      client_id: settings.client_id,
+      redirect_uri: settings.redirect_uri,
     });
 
     return `https://auth.mercadolivre.com.br/authorization?${params.toString()}`;

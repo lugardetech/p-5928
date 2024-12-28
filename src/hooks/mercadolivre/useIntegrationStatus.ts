@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { MercadoLivreSettings } from "@/types/mercadolivre";
 
 export function useIntegrationStatus() {
   return useQuery({
@@ -36,10 +37,12 @@ export function useIntegrationStatus() {
 
       console.log("✅ Status da integração obtido:", userIntegration);
 
+      const settings = userIntegration?.settings as MercadoLivreSettings | null;
+
       return {
-        isConfigured: userIntegration?.settings?.client_id && userIntegration?.settings?.client_secret,
+        isConfigured: settings?.client_id && settings?.client_secret,
         isAuthenticated: !!userIntegration?.access_token,
-        settings: userIntegration?.settings,
+        settings,
       };
     },
   });
