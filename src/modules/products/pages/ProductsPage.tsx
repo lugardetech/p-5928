@@ -39,12 +39,19 @@ export default function ProductsPage() {
 
   const handleDeleteSelected = async (selectedProducts: any[]) => {
     try {
+      console.log("🗑️ Tentando excluir produtos:", selectedProducts);
+
       const { error } = await supabase
         .from('products')
         .delete()
-        .in('id', selectedProducts.map(p => p.id));
+        .in('id', selectedProducts.map(p => p.original.id));
 
-      if (error) throw error;
+      if (error) {
+        console.error("❌ Erro ao excluir produtos:", error);
+        throw error;
+      }
+
+      console.log("✅ Produtos excluídos com sucesso!");
 
       toast({
         title: "Produtos excluídos",
@@ -53,7 +60,7 @@ export default function ProductsPage() {
 
       refetch();
     } catch (error) {
-      console.error("Erro ao excluir produtos:", error);
+      console.error("❌ Erro ao excluir produtos:", error);
       toast({
         variant: "destructive",
         title: "Erro ao excluir produtos",
