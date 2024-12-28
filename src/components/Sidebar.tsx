@@ -17,6 +17,7 @@ const menuItems = [
     path: "/integration",
     submenu: [
       { icon: Building, label: "Tiny ERP", path: "/integration/tiny-erp" },
+      { icon: Building, label: "Mercado Livre", path: "/integration/mercado-livre" },
     ],
   },
   { icon: User, label: "Profile", path: "/profile" },
