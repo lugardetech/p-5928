@@ -46,6 +46,23 @@ export function ProductForm() {
       console.log("=== Iniciando cadastro de produto ===");
       console.log("Dados do formulário:", formData);
 
+      // Verificar se o SKU já existe
+      const { data: existingProduct } = await supabase
+        .from("products")
+        .select("id")
+        .eq("sku", formData.sku)
+        .single();
+
+      if (existingProduct) {
+        toast({
+          variant: "destructive",
+          title: "SKU já existe",
+          description: "Por favor, escolha um SKU diferente.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Upload da imagem
       let imageUrl = null;
       if (formData.image) {
@@ -56,10 +73,15 @@ export function ProductForm() {
           .upload(fileName, formData.image);
 
         if (uploadError) throw uploadError;
-        imageUrl = data.path;
-      }
 
-      console.log("URL da imagem:", imageUrl);
+        // Construir a URL pública completa da imagem
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(fileName);
+
+        imageUrl = publicUrl;
+        console.log("URL pública da imagem:", imageUrl);
+      }
 
       // Inserir produto
       const { error } = await supabase.from("products").insert({
