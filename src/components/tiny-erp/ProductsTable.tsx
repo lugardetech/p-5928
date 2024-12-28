@@ -18,8 +18,9 @@ export const ProductsTable = () => {
   const { data: products, isLoading, error } = useQuery({
     queryKey: ["tiny-products"],
     queryFn: async () => {
-      console.log("Fetching tiny_erp integration...");
-      // First get the integration ID
+      console.log("=== Iniciando busca de produtos ===");
+      
+      // Primeiro, buscar a integração
       const { data: integration, error: integrationError } = await supabase
         .from("integrations")
         .select("id")
@@ -27,16 +28,18 @@ export const ProductsTable = () => {
         .maybeSingle();
 
       if (integrationError) {
-        console.error("Error fetching integration:", integrationError);
-        throw integrationError;
-      }
-
-      if (!integration?.id) {
-        console.error("Integration not found");
+        console.error("❌ Erro ao buscar integração:", integrationError);
         throw new Error("Integração Tiny ERP não encontrada");
       }
 
-      console.log("Fetching user integration with integration_id:", integration.id);
+      if (!integration?.id) {
+        console.error("❌ Integração não encontrada");
+        throw new Error("Integração Tiny ERP não encontrada");
+      }
+
+      console.log("✅ Integração encontrada:", integration);
+
+      // Depois, buscar o token de acesso do usuário
       const { data: userIntegration, error: userIntegrationError } = await supabase
         .from("user_integrations")
         .select("access_token")
@@ -44,30 +47,31 @@ export const ProductsTable = () => {
         .maybeSingle();
 
       if (userIntegrationError) {
-        console.error("Error fetching user integration:", userIntegrationError);
+        console.error("❌ Erro ao buscar integração do usuário:", userIntegrationError);
         throw userIntegrationError;
       }
 
       if (!userIntegration?.access_token) {
-        console.error("Access token not found");
+        console.error("❌ Token de acesso não encontrado");
         throw new Error("Token de acesso não encontrado");
       }
 
-      console.log("Fetching products from Edge Function...");
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tiny-products`, {
+      console.log("✅ Token de acesso encontrado");
+
+      // Agora sim, chamar a Edge Function
+      console.log("🔄 Chamando Edge Function tiny-products...");
+      const { data, error: functionError } = await supabase.functions.invoke('tiny-products', {
         headers: {
-          "Authorization": `Bearer ${userIntegration.access_token}`,
+          Authorization: `Bearer ${userIntegration.access_token}`,
         },
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error fetching products:", errorText);
-        throw new Error("Falha ao buscar produtos");
+      if (functionError) {
+        console.error("❌ Erro na Edge Function:", functionError);
+        throw new Error(functionError.message);
       }
 
-      const data = await response.json();
-      console.log("Products fetched successfully:", data);
+      console.log("✅ Produtos recebidos:", data);
       return data.produtos as Product[];
     },
     retry: false,
