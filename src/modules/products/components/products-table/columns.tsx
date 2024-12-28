@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ColumnDef, flexRender } from "@tanstack/react-table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Package } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ProductDetailsCard } from "@/components/products/ProductDetailsCard";
 
 interface Product {
@@ -99,8 +99,8 @@ export const columns: ColumnDef<Product>[] = [
 // Componente wrapper para a linha da tabela
 export const ProductTableRow = ({ row }: { row: any }) => {
   return (
-    <Sheet>
-      <SheetTrigger className="contents">
+    <Dialog>
+      <DialogTrigger className="contents">
         <tr className="cursor-pointer hover:bg-muted/50">
           {row.getVisibleCells().map((cell: any) => (
             <td key={cell.id} className="p-4">
@@ -108,15 +108,15 @@ export const ProductTableRow = ({ row }: { row: any }) => {
             </td>
           ))}
         </tr>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Detalhes do Produto</SheetTitle>
-        </SheetHeader>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Detalhes do Produto</DialogTitle>
+        </DialogHeader>
         <div className="mt-6">
           <ProductDetailsCard product={row.original} />
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 };
