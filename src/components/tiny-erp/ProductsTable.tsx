@@ -71,14 +71,16 @@ export const ProductsTable = () => {
       return data.produtos as Product[];
     },
     retry: false,
-    onError: (error) => {
-      console.error("Query error:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao carregar produtos",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao carregar os produtos",
-      });
-    },
+    meta: {
+      onError: (error: Error) => {
+        console.error("Query error:", error);
+        toast({
+          variant: "destructive",
+          title: "Erro ao carregar produtos",
+          description: error.message || "Ocorreu um erro ao carregar os produtos",
+        });
+      }
+    }
   });
 
   if (error) {
