@@ -34,14 +34,19 @@ export const CredentialsForm = () => {
   const { data: integration } = useQuery({
     queryKey: ["mercadolivre-integration"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("integrations")
-        .select("id")
-        .eq("name", "mercado_livre")
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("integrations")
+          .select("id")
+          .eq("name", "mercado_livre")
+          .maybeSingle();
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.error("Erro ao buscar integração:", error);
+        throw error;
+      }
     },
   });
 
@@ -69,7 +74,7 @@ export const CredentialsForm = () => {
         .select("id")
         .eq("user_id", userId)
         .eq("integration_id", integration.id)
-        .single();
+        .maybeSingle();
 
       if (fetchError && fetchError.code !== "PGRST116") {
         throw fetchError;
@@ -77,7 +82,7 @@ export const CredentialsForm = () => {
 
       let error;
       if (existingIntegration) {
-        ({ error } = await supabase
+        const { error: updateError } = await supabase
           .from("user_integrations")
           .update({
             settings: {
@@ -86,9 +91,10 @@ export const CredentialsForm = () => {
               redirect_uri: data.redirect_uri,
             },
           })
-          .eq("id", existingIntegration.id));
+          .eq("id", existingIntegration.id);
+        error = updateError;
       } else {
-        ({ error } = await supabase
+        const { error: insertError } = await supabase
           .from("user_integrations")
           .insert({
             integration_id: integration.id,
@@ -98,7 +104,8 @@ export const CredentialsForm = () => {
               client_secret: data.client_secret,
               redirect_uri: data.redirect_uri,
             },
-          }));
+          });
+        error = insertError;
       }
 
       if (error) throw error;
