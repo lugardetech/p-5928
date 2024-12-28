@@ -10,14 +10,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { ProductBasicInfo } from "./form/ProductBasicInfo";
+import { ProductPricing } from "./form/ProductPricing";
+import { ProductStock } from "./form/ProductStock";
+import { ProductImage } from "./form/ProductImage";
+import { FormData } from "./form/types";
 
 export function ProductForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,7 +27,7 @@ export function ProductForm() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     description: "",
     sku: "",
@@ -33,7 +35,7 @@ export function ProductForm() {
     cost_price: "",
     stock_quantity: "",
     min_stock_quantity: "",
-    image: null as File | null,
+    image: null,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -119,110 +121,10 @@ export function ProductForm() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Nome</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, description: e.target.value }))
-                }
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="sku">SKU</Label>
-              <Input
-                id="sku"
-                value={formData.sku}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, sku: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="price">Preço</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, price: e.target.value }))
-                  }
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="cost_price">Preço de Custo</Label>
-                <Input
-                  id="cost_price"
-                  type="number"
-                  step="0.01"
-                  value={formData.cost_price}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, cost_price: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="stock_quantity">Quantidade em Estoque</Label>
-                <Input
-                  id="stock_quantity"
-                  type="number"
-                  value={formData.stock_quantity}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      stock_quantity: e.target.value,
-                    }))
-                  }
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="min_stock_quantity">Estoque Mínimo</Label>
-                <Input
-                  id="min_stock_quantity"
-                  type="number"
-                  value={formData.min_stock_quantity}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      min_stock_quantity: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="image">Imagem</Label>
-              <Input
-                id="image"
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    image: e.target.files ? e.target.files[0] : null,
-                  }))
-                }
-              />
-            </div>
+            <ProductBasicInfo formData={formData} setFormData={setFormData} />
+            <ProductPricing formData={formData} setFormData={setFormData} />
+            <ProductStock formData={formData} setFormData={setFormData} />
+            <ProductImage formData={formData} setFormData={setFormData} />
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isLoading}>
