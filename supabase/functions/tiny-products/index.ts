@@ -10,16 +10,12 @@ Deno.serve(async (req) => {
   try {
     console.log("Edge Function: Starting tiny-products request")
     
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    )
-
-    // Get the authorization header from the request
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      console.error("Edge Function: No authorization header provided")
-      throw new Error('No authorization header')
+    // Obter o token do corpo da requisição
+    const { access_token } = await req.json()
+    
+    if (!access_token) {
+      console.error("Edge Function: No access token provided")
+      throw new Error('Token de acesso não fornecido')
     }
 
     console.log("Edge Function: Making request to Tiny API")
@@ -27,13 +23,13 @@ Deno.serve(async (req) => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authHeader, // Already in "Bearer {token}" format from the frontend
+        'Authorization': `Bearer ${access_token}`,
       },
     })
 
     if (!response.ok) {
       console.error(`Edge Function: Tiny API error: ${response.status} - ${response.statusText}`)
-      throw new Error(`Tiny API error: ${response.statusText}`)
+      throw new Error(`Erro na API do Tiny: ${response.statusText}`)
     }
 
     const data = await response.json()

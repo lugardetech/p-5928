@@ -61,9 +61,7 @@ export const ProductsTable = () => {
       // Agora sim, chamar a Edge Function
       console.log("🔄 Chamando Edge Function tiny-products...");
       const { data, error: functionError } = await supabase.functions.invoke('tiny-products', {
-        headers: {
-          Authorization: `Bearer ${userIntegration.access_token}`,
-        },
+        body: { access_token: userIntegration.access_token }
       });
 
       if (functionError) {
