@@ -24,10 +24,16 @@ export const columns: ColumnDef<Product>[] = [
     header: "Imagem",
     cell: ({ row }) => {
       const imageUrl = row.getValue("image_url") as string | null;
+      
+      // Construindo a URL completa apenas se houver uma image_url
+      const fullImageUrl = imageUrl 
+        ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/product-images/${imageUrl}`
+        : null;
+
       return (
         <Avatar>
           <AvatarImage 
-            src={imageUrl ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/product-images/${imageUrl}` : undefined} 
+            src={fullImageUrl} 
             alt={row.getValue("name")} 
           />
           <AvatarFallback>
