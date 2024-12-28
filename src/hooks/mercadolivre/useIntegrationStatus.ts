@@ -45,8 +45,13 @@ export function useIntegrationStatus() {
         redirect_uri: String(settings.redirect_uri || '')
       } : null;
 
+      // Verifica se todas as credenciais necessárias existem e não estão vazias
+      const hasValidCredentials = mercadoLivreSettings?.client_id && 
+                                mercadoLivreSettings?.client_secret && 
+                                mercadoLivreSettings?.redirect_uri;
+
       return {
-        isConfigured: mercadoLivreSettings?.client_id && mercadoLivreSettings?.client_secret,
+        isConfigured: Boolean(hasValidCredentials),
         isAuthenticated: !!userIntegration?.access_token,
         settings: mercadoLivreSettings,
       };

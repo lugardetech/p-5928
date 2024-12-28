@@ -596,7 +596,7 @@ export type Database = {
           {
             foreignKeyName: "user_integrations_integration_id_fkey"
             columns: ["integration_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "integrations"
             referencedColumns: ["id"]
           },
