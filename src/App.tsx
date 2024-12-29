@@ -14,8 +14,8 @@ import Profile from "@/pages/Profile";
 import Transactions from "@/pages/Transactions";
 import TinyErp from "@/pages/TinyErp";
 import TinyErpCallback from "@/pages/TinyErpCallback";
-import MercadoLivre from "@/pages/MercadoLivre";
-import MercadoLivreCallback from "@/pages/MercadoLivreCallback";
+import MercadoLivrePage from "@/modules/mercadolivre/pages/MercadoLivrePage";
+import MercadoLivreCallbackPage from "@/modules/mercadolivre/pages/MercadoLivreCallbackPage";
 import MercadoLivreClaims from "@/modules/mercadolivre/pages/ClaimsPage";
 import Login from "@/pages/Login";
 import { useEffect, useState } from "react";
@@ -86,8 +86,8 @@ function App() {
                       <Route path="/transactions" element={<Transactions />} />
                       <Route path="/integration/tiny-erp" element={<TinyErp />} />
                       <Route path="/integration/tiny-erp/callback" element={<TinyErpCallback />} />
-                      <Route path="/integration/mercado-livre" element={<MercadoLivre />} />
-                      <Route path="/integration/mercado-livre/callback" element={<MercadoLivreCallback />} />
+                      <Route path="/integration/mercado-livre" element={<MercadoLivrePage />} />
+                      <Route path="/integration/mercado-livre/callback" element={<MercadoLivreCallbackPage />} />
                       <Route path="/integration/mercado-livre/claims" element={<MercadoLivreClaims />} />
                     </Routes>
                   </div>
