@@ -1,7 +1,7 @@
 import { TinyIntegrationStatus } from "@/components/tiny-erp/TinyIntegrationStatus";
 import { ProductsTable } from "@/components/tiny-erp/ProductsTable";
 
-const TinyErp = () => {
+const TinyErpPage = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -14,4 +14,4 @@ const TinyErp = () => {
   );
 };
 
-export default TinyErp;
+export default TinyErpPage;
