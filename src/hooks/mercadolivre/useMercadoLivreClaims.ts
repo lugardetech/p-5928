@@ -18,7 +18,7 @@ export function useMercadoLivreClaims() {
           throw new Error("Usuário não autenticado");
         }
 
-        const { data, error } = await supabase.functions.invoke<ClaimResponse>("mercadolivre-claims", {
+        const { data: response, error } = await supabase.functions.invoke<ClaimResponse>("mercadolivre-claims", {
           body: { userId: user.id }
         });
 
@@ -32,8 +32,14 @@ export function useMercadoLivreClaims() {
           throw error;
         }
 
-        console.log("✅ Reclamações obtidas com sucesso:", data);
-        return data?.data || [];
+        console.log("✅ Reclamações obtidas com sucesso:", response);
+        
+        if (!response) {
+          console.log("⚠️ Nenhuma reclamação encontrada");
+          return [];
+        }
+
+        return response.data || [];
       } catch (error) {
         console.error("❌ Erro ao buscar reclamações:", error);
         toast({
