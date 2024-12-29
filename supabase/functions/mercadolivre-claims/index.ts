@@ -41,7 +41,7 @@ serve(async (req) => {
 
     console.log("✅ Integração encontrada");
 
-    // Buscar reclamações na API do Mercado Livre usando o endpoint correto
+    // Buscar reclamações na API do Mercado Livre
     const response = await fetch('https://api.mercadolibre.com/post-purchase/v1/claims/search?status=opened', {
       headers: {
         'Authorization': `Bearer ${userIntegration.access_token}`,
@@ -57,7 +57,49 @@ serve(async (req) => {
     const claims = await response.json();
     console.log("✅ Reclamações obtidas com sucesso:", claims);
 
-    return new Response(JSON.stringify(claims), {
+    // Salvar/atualizar reclamações no banco
+    for (const claim of claims.data) {
+      const { error: upsertError } = await supabase
+        .from('mercadolivre_claims')
+        .upsert({
+          user_id: userId,
+          claim_id: claim.id,
+          resource_id: claim.resource_id,
+          status: claim.status,
+          type: claim.type,
+          stage: claim.stage,
+          parent_id: claim.parent_id,
+          resource: claim.resource,
+          reason_id: claim.reason_id,
+          fulfilled: claim.fulfilled,
+          quantity_type: claim.quantity_type,
+          players: claim.players,
+          resolution: claim.resolution,
+          site_id: claim.site_id,
+          date_created: claim.date_created,
+          last_updated: claim.last_updated
+        }, {
+          onConflict: 'user_id,claim_id'
+        });
+
+      if (upsertError) {
+        console.error("❌ Erro ao salvar reclamação:", upsertError);
+      }
+    }
+
+    // Buscar reclamações atualizadas do banco
+    const { data: dbClaims, error: dbError } = await supabase
+      .from('mercadolivre_claims')
+      .select('*')
+      .eq('user_id', userId)
+      .order('date_created', { ascending: false });
+
+    if (dbError) {
+      console.error("❌ Erro ao buscar reclamações do banco:", dbError);
+      throw dbError;
+    }
+
+    return new Response(JSON.stringify({ data: dbClaims }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

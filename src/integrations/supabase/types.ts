@@ -231,6 +231,180 @@ export type Database = {
           },
         ]
       }
+      mercadolivre_claims: {
+        Row: {
+          claim_id: number
+          created_at: string
+          date_created: string
+          fulfilled: boolean
+          id: string
+          last_updated: string
+          parent_id: string | null
+          players: Json
+          quantity_type: string
+          reason_id: string
+          resolution: Json | null
+          resource: string
+          resource_id: number
+          site_id: string
+          stage: string
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          claim_id: number
+          created_at?: string
+          date_created: string
+          fulfilled: boolean
+          id?: string
+          last_updated: string
+          parent_id?: string | null
+          players: Json
+          quantity_type: string
+          reason_id: string
+          resolution?: Json | null
+          resource: string
+          resource_id: number
+          site_id: string
+          stage: string
+          status: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          claim_id?: number
+          created_at?: string
+          date_created?: string
+          fulfilled?: boolean
+          id?: string
+          last_updated?: string
+          parent_id?: string | null
+          players?: Json
+          quantity_type?: string
+          reason_id?: string
+          resolution?: Json | null
+          resource?: string
+          resource_id?: number
+          site_id?: string
+          stage?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mercadolivre_orders: {
+        Row: {
+          buyer: Json
+          created_at: string
+          currency_id: string
+          date_closed: string | null
+          date_created: string
+          id: string
+          order_id: number
+          order_items: Json
+          paid_amount: number | null
+          payments: Json
+          seller: Json
+          shipping: Json
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          buyer: Json
+          created_at?: string
+          currency_id: string
+          date_closed?: string | null
+          date_created: string
+          id?: string
+          order_id: number
+          order_items: Json
+          paid_amount?: number | null
+          payments: Json
+          seller: Json
+          shipping: Json
+          status: string
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          buyer?: Json
+          created_at?: string
+          currency_id?: string
+          date_closed?: string | null
+          date_created?: string
+          id?: string
+          order_id?: number
+          order_items?: Json
+          paid_amount?: number | null
+          payments?: Json
+          seller?: Json
+          shipping?: Json
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mercadolivre_questions: {
+        Row: {
+          answer: string | null
+          answer_date: string | null
+          answer_status: string | null
+          created_at: string
+          date_created: string
+          from_user: Json
+          id: string
+          item_id: string
+          question_id: number
+          seller_id: number
+          status: string
+          text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer?: string | null
+          answer_date?: string | null
+          answer_status?: string | null
+          created_at?: string
+          date_created: string
+          from_user: Json
+          id?: string
+          item_id: string
+          question_id: number
+          seller_id: number
+          status: string
+          text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string | null
+          answer_date?: string | null
+          answer_status?: string | null
+          created_at?: string
+          date_created?: string
+          from_user?: Json
+          id?: string
+          item_id?: string
+          question_id?: number
+          seller_id?: number
+          status?: string
+          text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
