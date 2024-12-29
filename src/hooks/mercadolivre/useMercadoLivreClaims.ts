@@ -39,6 +39,7 @@ export function useMercadoLivreClaims() {
           return [];
         }
 
+        // Retorna o array de dados da resposta
         return response.data || [];
       } catch (error) {
         console.error("❌ Erro ao buscar reclamações:", error);
