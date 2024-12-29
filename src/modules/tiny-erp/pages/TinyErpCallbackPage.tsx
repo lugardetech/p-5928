@@ -1,75 +1,55 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
-const TinyErpCallbackPage = () => {
+export default function TinyErpCallbackPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const code = searchParams.get("code");
 
   useEffect(() => {
-    const handleCallback = async () => {
-      const code = searchParams.get("code");
-      const error = searchParams.get("error");
-      const error_description = searchParams.get("error_description");
-
-      console.log("=== Iniciando callback do Tiny ERP ===");
-      console.log("Parâmetros recebidos na URL:");
-      console.log("- code:", code);
-      console.log("- error:", error);
-      console.log("- error_description:", error_description);
-      
-      if (error || !code) {
-        console.error("❌ Erro na autenticação:", error, error_description);
-        toast({
-          variant: "destructive",
-          title: "Erro na autenticação",
-          description: error_description || "Ocorreu um erro durante a autenticação.",
-        });
-        navigate("/integration/tiny-erp");
-        return;
-      }
-
+    async function exchangeToken() {
       try {
-        console.log("🔄 Chamando Edge Function para troca de tokens...");
-        const { data, error } = await supabase.functions.invoke('tiny-token-exchange', {
-          body: { code }
-        });
-
-        if (error) {
-          console.error("❌ Erro na Edge Function:", error);
-          throw new Error(error.message);
+        if (!code) {
+          throw new Error("Código de autorização não encontrado");
         }
 
-        console.log("✅ Tokens trocados e salvos com sucesso");
-        toast({
-          title: "Autenticação bem-sucedida",
-          description: "Sua conta do Tiny ERP foi conectada com sucesso!",
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          throw new Error("Usuário não autenticado");
+        }
+
+        const { error } = await supabase.functions.invoke("tiny-token-exchange", {
+          body: { code, userId: user.id }
         });
+
+        if (error) throw error;
+
+        toast({
+          title: "Sucesso!",
+          description: "Integração com Tiny ERP realizada com sucesso",
+        });
+
+        navigate("/integration/tiny-erp");
       } catch (error) {
-        console.error("❌ Erro ao processar callback:", error);
+        console.error("Erro ao trocar token:", error);
         toast({
           variant: "destructive",
-          title: "Erro ao processar autenticação",
-          description: error instanceof Error ? error.message : "Ocorreu um erro ao processar a autenticação.",
+          title: "Erro na integração",
+          description: error.message || "Ocorreu um erro ao realizar a integração"
         });
+        navigate("/integration/tiny-erp");
       }
+    }
 
-      navigate("/integration/tiny-erp");
-    };
-
-    handleCallback();
-  }, [searchParams, navigate, toast]);
+    exchangeToken();
+  }, [code, navigate, toast]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">Processando autenticação...</h1>
-        <p>Aguarde enquanto processamos sua autenticação com o Tiny ERP.</p>
-      </div>
+    <div className="flex items-center justify-center min-h-[200px]">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
     </div>
   );
-};
-
-export default TinyErpCallbackPage;
+}
