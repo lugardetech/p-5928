@@ -1,0 +1,10 @@
+project_id = "sptrkzceogbuzlvcoptx"
+
+[functions.mercadolivre-claims]
+verify_jwt = true
+
+[functions.mercadolivre-claims-closed]
+verify_jwt = true
+
+[functions.mercadolivre-token-exchange]
+verify_jwt = true
