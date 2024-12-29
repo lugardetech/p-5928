@@ -2,8 +2,11 @@ import { Card } from "@/components/ui/card";
 import { TinyIntegrationStatus } from "@/components/tiny-erp/TinyIntegrationStatus";
 import { CredentialsForm } from "@/components/tiny-erp/CredentialsForm";
 import { ProductSearch } from "@/components/tiny-erp/ProductSearch";
+import { useState } from "react";
 
 export default function TinyErpPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+
   return (
     <div className="space-y-8">
       <header>
@@ -21,7 +24,10 @@ export default function TinyErpPage() {
         </Card>
 
         <Card className="p-6">
-          <ProductSearch />
+          <ProductSearch 
+            value={searchTerm}
+            onChange={setSearchTerm}
+          />
         </Card>
       </div>
     </div>
