@@ -57,7 +57,7 @@ serve(async (req) => {
     const claims = await response.json();
     console.log("✅ Reclamações obtidas com sucesso:", claims);
 
-    return new Response(JSON.stringify(claims.results || []), {
+    return new Response(JSON.stringify(claims), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
