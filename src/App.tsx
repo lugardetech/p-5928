@@ -1,31 +1,32 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Sidebar } from "@/components/Sidebar";
-import Index from "@/pages/Index";
-import Products from "@/modules/products/pages/ProductsPage";
-import Sales from "@/modules/sales/pages/SalesPage";
-import Purchases from "@/modules/purchases/pages/PurchasesPage";
-import Returns from "@/modules/returns/pages/ReturnsPage";
-import Support from "@/modules/support/pages/SupportPage";
-import Settings from "@/pages/Settings";
-import Notifications from "@/pages/Notifications";
-import Analytics from "@/pages/Analytics";
-import Profile from "@/pages/Profile";
-import Transactions from "@/pages/Transactions";
-import TinyErp from "@/pages/TinyErp";
-import TinyErpCallback from "@/pages/TinyErpCallback";
-import MercadoLivrePage from "@/modules/mercadolivre/pages/MercadoLivrePage";
-import MercadoLivreCallbackPage from "@/modules/mercadolivre/pages/MercadoLivreCallbackPage";
-import MercadoLivreClaims from "@/modules/mercadolivre/pages/ClaimsPage";
-import Login from "@/pages/Login";
-import { useEffect, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+
+// Pages
+import LoginPage from "@/modules/auth/pages/LoginPage";
+import DashboardPage from "@/modules/dashboard/pages/DashboardPage";
+import ProductsPage from "@/modules/products/pages/ProductsPage";
+import SalesPage from "@/modules/sales/pages/SalesPage";
+import PurchasesPage from "@/modules/purchases/pages/PurchasesPage";
+import ReturnsPage from "@/modules/returns/pages/ReturnsPage";
+import SupportPage from "@/modules/support/pages/SupportPage";
+import SettingsPage from "@/modules/settings/pages/SettingsPage";
+import NotificationsPage from "@/modules/notifications/pages/NotificationsPage";
+import AnalyticsPage from "@/modules/analytics/pages/AnalyticsPage";
+import ProfilePage from "@/modules/profile/pages/ProfilePage";
+import TransactionsPage from "@/modules/transactions/pages/TransactionsPage";
+import TinyErpPage from "@/modules/tiny-erp/pages/TinyErpPage";
+import TinyErpCallbackPage from "@/modules/tiny-erp/pages/TinyErpCallbackPage";
+import MercadoLivrePage from "@/modules/mercadolivre/pages/MercadoLivrePage";
+import MercadoLivreCallbackPage from "@/modules/mercadolivre/pages/MercadoLivreCallbackPage";
+import MercadoLivreClaimsPage from "@/modules/mercadolivre/pages/ClaimsPage";
 
 import "./App.css";
 
-// Criar instância do QueryClient fora do componente
 const queryClient = new QueryClient();
 
 function App() {
@@ -33,13 +34,11 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar sessão atual
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Escutar mudanças na autenticação
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -62,7 +61,7 @@ function App() {
       <Router>
         {!user ? (
           <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         ) : (
@@ -73,22 +72,22 @@ function App() {
                 <div className="col-span-3 lg:col-span-4 lg:border-l">
                   <div className="px-4 py-6 lg:px-8">
                     <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/products" element={<Products />} />
-                      <Route path="/sales" element={<Sales />} />
-                      <Route path="/purchases" element={<Purchases />} />
-                      <Route path="/returns" element={<Returns />} />
-                      <Route path="/support" element={<Support />} />
-                      <Route path="/settings" element={<Settings />} />
-                      <Route path="/notifications" element={<Notifications />} />
-                      <Route path="/analytics" element={<Analytics />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/transactions" element={<Transactions />} />
-                      <Route path="/integration/tiny-erp" element={<TinyErp />} />
-                      <Route path="/integration/tiny-erp/callback" element={<TinyErpCallback />} />
+                      <Route path="/" element={<DashboardPage />} />
+                      <Route path="/products" element={<ProductsPage />} />
+                      <Route path="/sales" element={<SalesPage />} />
+                      <Route path="/purchases" element={<PurchasesPage />} />
+                      <Route path="/returns" element={<ReturnsPage />} />
+                      <Route path="/support" element={<SupportPage />} />
+                      <Route path="/settings" element={<SettingsPage />} />
+                      <Route path="/notifications" element={<NotificationsPage />} />
+                      <Route path="/analytics" element={<AnalyticsPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route path="/transactions" element={<TransactionsPage />} />
+                      <Route path="/integration/tiny-erp" element={<TinyErpPage />} />
+                      <Route path="/integration/tiny-erp/callback" element={<TinyErpCallbackPage />} />
                       <Route path="/integration/mercado-livre" element={<MercadoLivrePage />} />
                       <Route path="/integration/mercado-livre/callback" element={<MercadoLivreCallbackPage />} />
-                      <Route path="/integration/mercado-livre/claims" element={<MercadoLivreClaims />} />
+                      <Route path="/integration/mercado-livre/claims" element={<MercadoLivreClaimsPage />} />
                     </Routes>
                   </div>
                 </div>
