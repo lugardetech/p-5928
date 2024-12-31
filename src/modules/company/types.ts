@@ -1,4 +1,7 @@
+import { Json } from "@/integrations/supabase/types";
+
 export interface CompanyFormData {
+  id?: string;
   name: string;
   trading_name?: string;
   tax_id: string;

@@ -3,6 +3,7 @@ import { Json } from "@/integrations/supabase/types";
 
 export function adaptFormDataToDatabase(formData: CompanyFormData): Partial<CompanyData> {
   return {
+    id: formData.id,
     name: formData.name,
     trading_name: formData.trading_name || null,
     tax_id: formData.tax_id,
@@ -17,6 +18,7 @@ export function adaptFormDataToDatabase(formData: CompanyFormData): Partial<Comp
 
 export function adaptDatabaseToFormData(data: CompanyData): CompanyFormData {
   return {
+    id: data.id,
     name: data.name,
     trading_name: data.trading_name || undefined,
     tax_id: data.tax_id,
