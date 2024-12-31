@@ -16,10 +16,9 @@ interface TinyErpSettings {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
-  [key: string]: string; // Add index signature
+  [key: string]: string;
 }
 
-// Type guard para verificar se o objeto settings tem a estrutura correta
 function isTinyErpSettings(settings: Json | null): settings is TinyErpSettings {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
     return false;
@@ -44,57 +43,45 @@ export const useTinyProducts = () => {
       // Buscar integração
       const { data: integration, error: integrationError } = await supabase
         .from("integrations")
-        .select("id")
+        .select("*")
         .eq("name", "tiny_erp")
-        .maybeSingle();
+        .single();
 
       if (integrationError) {
         console.error("❌ Erro ao buscar integração:", integrationError);
         throw new Error("Integração Tiny ERP não encontrada");
       }
 
-      if (!integration?.id) {
+      if (!integration) {
         console.error("❌ Integração não encontrada");
         throw new Error("Integração Tiny ERP não encontrada");
       }
 
       console.log("✅ Integração encontrada:", integration);
 
-      // Buscar token de acesso e configurações
-      const { data: userIntegration, error: userIntegrationError } = await supabase
-        .from("user_integrations")
-        .select("access_token, refresh_token, token_expires_at, settings")
-        .eq("integration_id", integration.id)
-        .maybeSingle();
-
-      if (userIntegrationError) {
-        console.error("❌ Erro ao buscar integração do usuário:", userIntegrationError);
-        throw userIntegrationError;
-      }
-
-      if (!userIntegration?.access_token) {
+      if (!integration.access_token) {
         console.error("❌ Token de acesso não encontrado");
         throw new Error("Token de acesso não encontrado");
       }
 
-      if (!isTinyErpSettings(userIntegration.settings)) {
-        console.error("❌ Configurações inválidas:", userIntegration.settings);
+      if (!isTinyErpSettings(integration.settings)) {
+        console.error("❌ Configurações inválidas:", integration.settings);
         throw new Error("Configurações da integração inválidas");
       }
 
       // Verificar se o token expirou
-      let accessToken = userIntegration.access_token;
-      if (userIntegration.token_expires_at) {
-        const expiresAt = new Date(userIntegration.token_expires_at);
+      let accessToken = integration.access_token;
+      if (integration.token_expires_at) {
+        const expiresAt = new Date(integration.token_expires_at);
         if (expiresAt < new Date()) {
           console.log("🔄 Token expirado, tentando renovar...");
           
           try {
             const { data: refreshData, error: refreshError } = await supabase.functions.invoke('tiny-token-refresh', {
               body: { 
-                refresh_token: userIntegration.refresh_token,
-                client_id: userIntegration.settings.client_id,
-                client_secret: userIntegration.settings.client_secret
+                refresh_token: integration.refresh_token,
+                client_id: integration.settings.client_id,
+                client_secret: integration.settings.client_secret
               }
             });
 
@@ -102,14 +89,14 @@ export const useTinyProducts = () => {
 
             // Atualizar tokens no banco
             const { error: updateError } = await supabase
-              .from('user_integrations')
+              .from('integrations')
               .update({
                 access_token: refreshData.access_token,
                 refresh_token: refreshData.refresh_token,
                 token_expires_at: refreshData.token_expires_at,
                 refresh_token_expires_at: refreshData.refresh_token_expires_at
               })
-              .eq('integration_id', integration.id);
+              .eq('id', integration.id);
 
             if (updateError) throw updateError;
 

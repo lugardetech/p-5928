@@ -38,11 +38,13 @@ export const CredentialsForm = () => {
         .from("integrations")
         .select("id")
         .eq("name", "tiny_erp")
+        .eq("user_id", userId)
         .single();
 
       if (error) throw error;
       return data;
     },
+    enabled: !!userId,
   });
 
   const form = useForm<CredentialsForm>({
@@ -56,19 +58,15 @@ export const CredentialsForm = () => {
 
   const onSubmit = async (data: CredentialsForm) => {
     try {
-      if (!integration?.id) {
-        throw new Error("Integração não encontrada");
-      }
-
       if (!userId) {
         throw new Error("Usuário não autenticado");
       }
 
       const { data: existingIntegration, error: fetchError } = await supabase
-        .from("user_integrations")
+        .from("integrations")
         .select("id")
         .eq("user_id", userId)
-        .eq("integration_id", integration.id)
+        .eq("name", "tiny_erp")
         .single();
 
       if (fetchError && fetchError.code !== "PGRST116") {
@@ -78,7 +76,7 @@ export const CredentialsForm = () => {
       let error;
       if (existingIntegration) {
         ({ error } = await supabase
-          .from("user_integrations")
+          .from("integrations")
           .update({
             settings: {
               client_id: data.client_id,
@@ -89,9 +87,9 @@ export const CredentialsForm = () => {
           .eq("id", existingIntegration.id));
       } else {
         ({ error } = await supabase
-          .from("user_integrations")
+          .from("integrations")
           .insert({
-            integration_id: integration.id,
+            name: "tiny_erp",
             user_id: userId,
             settings: {
               client_id: data.client_id,

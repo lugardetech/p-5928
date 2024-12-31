@@ -8,10 +8,9 @@ interface TinyErpSettings {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
-  [key: string]: string; // Add index signature
+  [key: string]: string;
 }
 
-// Type guard to check if the settings match TinyErpSettings interface
 function isTinyErpSettings(settings: Json | null): settings is TinyErpSettings {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
     return false;
@@ -41,16 +40,16 @@ export const useIntegrationStatus = () => {
     getCurrentUser();
   }, []);
 
-  // First, get the integration ID for tiny_erp
   const { data: integration } = useQuery({
-    queryKey: ["tiny-integration"],
+    queryKey: ["tiny-integration", userId],
     queryFn: async () => {
       console.log("Fetching tiny_erp integration...");
       const { data, error } = await supabase
         .from("integrations")
-        .select("id")
+        .select("*")
         .eq("name", "tiny_erp")
-        .maybeSingle();
+        .eq("user_id", userId)
+        .single();
 
       if (error) {
         console.error("Error fetching integration:", error);
@@ -59,67 +58,53 @@ export const useIntegrationStatus = () => {
       console.log("Found integration:", data);
       return data;
     },
+    enabled: !!userId,
   });
 
   useEffect(() => {
     const checkIntegrationStatus = async () => {
-      if (!userId || !integration?.id) {
-        console.log("Missing userId or integration.id", { userId, integrationId: integration?.id });
+      if (!integration) {
+        console.log("No integration found");
         return;
       }
 
-      console.log("Checking integration status for user", userId);
-      const { data, error } = await supabase
-        .from("user_integrations")
-        .select("settings, access_token, token_expires_at")
-        .eq("user_id", userId)
-        .eq("integration_id", integration.id)
-        .maybeSingle();
+      console.log("Checking integration status", integration);
 
-      if (error) {
-        console.error("Error checking integration status:", error);
-        return;
-      }
-
-      console.log("Integration status data:", data);
-
-      if (data) {
-        if (isTinyErpSettings(data.settings)) {
-          setHasCredentials(true);
-          
-          if (data.access_token && data.token_expires_at) {
-            const expiresAt = new Date(data.token_expires_at);
-            setIsConnected(expiresAt > new Date());
-          } else {
-            setIsConnected(false);
-          }
+      if (isTinyErpSettings(integration.settings)) {
+        setHasCredentials(true);
+        
+        if (integration.access_token && integration.token_expires_at) {
+          const expiresAt = new Date(integration.token_expires_at);
+          setIsConnected(expiresAt > new Date());
         } else {
-          console.log("Invalid settings format:", data.settings);
-          setHasCredentials(false);
           setIsConnected(false);
         }
+      } else {
+        console.log("Invalid settings format:", integration.settings);
+        setHasCredentials(false);
+        setIsConnected(false);
       }
     };
 
     checkIntegrationStatus();
-  }, [userId, integration?.id]);
+  }, [integration]);
 
   const handleAuth = async () => {
     try {
-      if (!userId || !integration?.id) {
-        throw new Error("Usuário não autenticado ou integração não encontrada");
+      if (!userId) {
+        throw new Error("Usuário não autenticado");
       }
 
-      console.log("Fetching user integration...");
+      console.log("Fetching integration...");
       const { data: userIntegration, error: fetchError } = await supabase
-        .from("user_integrations")
-        .select("settings")
+        .from("integrations")
+        .select("*")
         .eq("user_id", userId)
-        .eq("integration_id", integration.id)
+        .eq("name", "tiny_erp")
         .single();
 
       if (fetchError) {
-        console.error("Error fetching user integration:", fetchError);
+        console.error("Error fetching integration:", fetchError);
         throw fetchError;
       }
 
