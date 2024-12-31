@@ -16,6 +16,7 @@ export const CredentialsForm = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
+        console.log("ID do usuário atual:", user.id);
       }
     };
     getCurrentUser();
@@ -33,64 +34,68 @@ export const CredentialsForm = () => {
   const onSubmit = async (data: CredentialsFormType) => {
     try {
       if (!userId) {
+        console.error("Usuário não autenticado");
         throw new Error("Usuário não autenticado");
       }
 
-      console.log("Salvando credenciais para o usuário:", userId);
+      console.log("Iniciando salvamento de credenciais para usuário:", userId);
+      console.log("Dados a serem salvos:", data);
 
       // Verificar se já existe uma integração
       const { data: existingIntegration, error: fetchError } = await supabase
         .from("integrations")
-        .select("id")
+        .select("*")
         .eq("user_id", userId)
         .eq("name", "mercado_livre")
         .maybeSingle();
 
-      console.log("Integração existente:", existingIntegration);
-      console.log("Erro ao buscar:", fetchError);
+      console.log("Resultado da busca por integração existente:", { existingIntegration, fetchError });
 
-      if (fetchError && fetchError.code !== "PGRST116") {
-        throw fetchError;
+      if (fetchError) {
+        console.error("Erro ao buscar integração:", fetchError);
+        if (fetchError.code !== "PGRST116") {
+          throw fetchError;
+        }
       }
 
-      let error;
+      const integrationData = {
+        settings: {
+          client_id: data.client_id,
+          client_secret: data.client_secret,
+          redirect_uri: data.redirect_uri,
+        },
+        name: "mercado_livre",
+        description: "Integração com o Mercado Livre para gerenciamento de vendas e reclamações",
+        user_id: userId,
+      };
+
+      let result;
       
       if (existingIntegration) {
         console.log("Atualizando integração existente:", existingIntegration.id);
-        const { error: updateError } = await supabase
+        result = await supabase
           .from("integrations")
-          .update({
-            settings: {
-              client_id: data.client_id,
-              client_secret: data.client_secret,
-              redirect_uri: data.redirect_uri,
-            },
-          })
-          .eq("id", existingIntegration.id);
-        error = updateError;
+          .update(integrationData)
+          .eq("id", existingIntegration.id)
+          .select()
+          .single();
       } else {
         console.log("Criando nova integração");
-        const { error: insertError } = await supabase
+        result = await supabase
           .from("integrations")
-          .insert({
-            name: "mercado_livre",
-            user_id: userId,
-            description: "Integração com o Mercado Livre para gerenciamento de vendas e reclamações",
-            settings: {
-              client_id: data.client_id,
-              client_secret: data.client_secret,
-              redirect_uri: data.redirect_uri,
-            },
-          });
-        error = insertError;
+          .insert(integrationData)
+          .select()
+          .single();
       }
 
-      if (error) {
-        console.error("Erro ao salvar credenciais:", error);
-        throw error;
+      console.log("Resultado da operação:", result);
+
+      if (result.error) {
+        console.error("Erro ao salvar credenciais:", result.error);
+        throw result.error;
       }
 
-      console.log("Credenciais salvas com sucesso!");
+      console.log("Credenciais salvas com sucesso!", result.data);
 
       toast({
         title: "Credenciais salvas com sucesso!",
