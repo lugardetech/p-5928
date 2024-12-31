@@ -1,7 +1,7 @@
 import { CompanyFormData, CompanyData } from "../types";
 import { Json } from "@/integrations/supabase/types";
 
-export function adaptFormDataToDatabase(formData: CompanyFormData): Partial<CompanyData> {
+export function adaptFormDataToDatabase(formData: CompanyFormData): Omit<CompanyData, 'created_at' | 'active'> {
   return {
     id: formData.id,
     name: formData.name,
@@ -13,6 +13,8 @@ export function adaptFormDataToDatabase(formData: CompanyFormData): Partial<Comp
     email: formData.email || null,
     website: formData.website || null,
     address: formData.address as Json,
+    logo_url: null,
+    settings: null
   };
 }
 
@@ -27,6 +29,6 @@ export function adaptDatabaseToFormData(data: CompanyData): CompanyFormData {
     phone: data.phone || undefined,
     email: data.email || undefined,
     website: data.website || undefined,
-    address: data.address as CompanyFormData['address'],
+    address: data.address as CompanyFormData['address']
   };
 }

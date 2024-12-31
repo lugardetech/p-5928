@@ -68,7 +68,7 @@ export default function CompanyPage() {
         // Criar nova empresa
         const { data: newCompany, error: createError } = await supabase
           .from("companies")
-          .insert([{ ...dbData, active: true }])
+          .insert({ ...dbData, active: true })
           .select()
           .single();
 
