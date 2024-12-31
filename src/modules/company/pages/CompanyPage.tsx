@@ -1,71 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { MaskedInput } from "@/components/ui/masked-input";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { CompanyFormData } from "../types";
+import { CompanyForm } from "../components/CompanyForm";
 import { adaptFormDataToDatabase, adaptDatabaseToFormData } from "../utils/form-adapters";
-
-const companyFormSchema = z.object({
-  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  trading_name: z.string().optional(),
-  tax_id: z.string().min(14, "CNPJ inválido"),
-  state_tax_id: z.string().optional(),
-  municipal_tax_id: z.string().optional(),
-  phone: z.string().optional(),
-  email: z.string().email("Email inválido").optional(),
-  website: z.string().url("URL inválida").optional(),
-  address: z.object({
-    street: z.string().optional(),
-    number: z.string().optional(),
-    complement: z.string().optional(),
-    neighborhood: z.string().optional(),
-    city: z.string().optional(),
-    state: z.string().optional(),
-    zip_code: z.string().optional(),
-  }).optional(),
-});
 
 export default function CompanyPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [company, setCompany] = useState<CompanyFormData | null>(null);
-
-  const form = useForm<CompanyFormData>({
-    resolver: zodResolver(companyFormSchema),
-    defaultValues: {
-      name: "",
-      trading_name: "",
-      tax_id: "",
-      state_tax_id: "",
-      municipal_tax_id: "",
-      phone: "",
-      email: "",
-      website: "",
-      address: {
-        street: "",
-        number: "",
-        complement: "",
-        neighborhood: "",
-        city: "",
-        state: "",
-        zip_code: "",
-      },
-    },
-  });
 
   useEffect(() => {
     async function loadCompany() {
@@ -78,7 +22,7 @@ export default function CompanyPage() {
           .from("profiles")
           .select("company_id")
           .eq("id", profile.user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) throw profileError;
 
@@ -87,13 +31,14 @@ export default function CompanyPage() {
             .from("companies")
             .select("*")
             .eq("id", profileData.company_id)
-            .single();
+            .maybeSingle();
 
           if (companyError) throw companyError;
 
-          const formData = adaptDatabaseToFormData(companyData);
-          setCompany(formData);
-          form.reset(formData);
+          if (companyData) {
+            const formData = adaptDatabaseToFormData(companyData);
+            setCompany(formData);
+          }
         }
       } catch (error) {
         console.error("Erro ao carregar empresa:", error);
@@ -176,138 +121,11 @@ export default function CompanyPage() {
           <CardTitle>Dados da Empresa</CardTitle>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Razão Social</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="trading_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome Fantasia</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="tax_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>CNPJ</FormLabel>
-                      <FormControl>
-                        <MaskedInput 
-                          mask="99.999.999/9999-99"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="state_tax_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Inscrição Estadual</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Telefone</FormLabel>
-                      <FormControl>
-                        <MaskedInput 
-                          mask="(99) 99999-9999"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="email" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="website"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Website</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="url" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="address.zip_code"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>CEP</FormLabel>
-                      <FormControl>
-                        <MaskedInput 
-                          mask="99999-999"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="flex justify-end">
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Salvando..." : "Salvar"}
-                </Button>
-              </div>
-            </form>
-          </Form>
+          <CompanyForm
+            initialData={company || undefined}
+            onSubmit={onSubmit}
+            loading={loading}
+          />
         </CardContent>
       </Card>
     </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import InputMask from 'input-mask';
+import ReactInputMask from 'react-input-mask';
 import { Input } from './input';
 import { cn } from '@/lib/utils';
 
@@ -10,7 +10,7 @@ interface MaskedInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
   ({ className, mask, ...props }, ref) => {
     return (
-      <InputMask mask={mask} {...props}>
+      <ReactInputMask mask={mask} {...props}>
         {(inputProps: any) => (
           <Input
             {...inputProps}
@@ -18,7 +18,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
             className={cn("masked-input", className)}
           />
         )}
-      </InputMask>
+      </ReactInputMask>
     );
   }
 );
