@@ -11,7 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -33,6 +33,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export function ProfileForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -47,13 +48,28 @@ export function ProfileForm() {
     async function loadProfile() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          setInitialLoading(false);
+          return;
+        }
 
-        const { data: profile } = await supabase
+        console.log("Carregando dados do perfil para usuário:", user.id);
+
+        const { data: profile, error } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
-          .single();
+          .maybeSingle();
+
+        if (error) {
+          console.error("Erro ao carregar perfil:", error);
+          toast({
+            variant: "destructive",
+            title: "Erro",
+            description: "Não foi possível carregar os dados do perfil.",
+          });
+          return;
+        }
 
         if (profile) {
           form.reset({
@@ -69,6 +85,8 @@ export function ProfileForm() {
           title: "Erro",
           description: "Não foi possível carregar os dados do perfil.",
         });
+      } finally {
+        setInitialLoading(false);
       }
     }
 
@@ -83,13 +101,13 @@ export function ProfileForm() {
 
       const { error } = await supabase
         .from("profiles")
-        .update({
+        .upsert({
+          id: user.id,
           first_name: data.first_name,
           last_name: data.last_name,
           phone: data.phone,
           updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
+        });
 
       if (error) throw error;
 
@@ -107,6 +125,14 @@ export function ProfileForm() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (
