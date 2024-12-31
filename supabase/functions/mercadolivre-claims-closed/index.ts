@@ -22,11 +22,11 @@ serve(async (req) => {
     }
 
     // Buscar integração do usuário
-    const { data: userIntegration, error: integrationError } = await supabase
-      .from('user_integrations')
+    const { data: integration, error: integrationError } = await supabase
+      .from('integrations')
       .select('*')
       .eq('user_id', userId)
-      .eq('integration_id', 'ae8f644a-bf1a-42ef-a3aa-6b3887971ef9')
+      .eq('name', 'mercado_livre')
       .single();
 
     if (integrationError) {
@@ -34,7 +34,7 @@ serve(async (req) => {
       throw new Error("Erro ao buscar integração");
     }
 
-    if (!userIntegration?.access_token) {
+    if (!integration?.access_token) {
       console.error("❌ Token de acesso não encontrado");
       throw new Error("Token de acesso não encontrado");
     }
@@ -44,7 +44,7 @@ serve(async (req) => {
     // Buscar reclamações fechadas na API do Mercado Livre
     const response = await fetch('https://api.mercadolibre.com/post-purchase/v1/claims/search?status=closed', {
       headers: {
-        'Authorization': `Bearer ${userIntegration.access_token}`,
+        'Authorization': `Bearer ${integration.access_token}`,
       },
     });
 
