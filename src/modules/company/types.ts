@@ -1,5 +1,15 @@
 import { Json } from "@/integrations/supabase/types";
 
+export interface CompanyAddress {
+  street?: string;
+  number?: string;
+  complement?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+}
+
 export interface CompanyFormData {
   id?: string;
   name: string;
@@ -10,15 +20,7 @@ export interface CompanyFormData {
   phone?: string;
   email?: string;
   website?: string;
-  address?: {
-    street?: string;
-    number?: string;
-    complement?: string;
-    neighborhood?: string;
-    city?: string;
-    state?: string;
-    zip_code?: string;
-  };
+  address?: CompanyAddress;
 }
 
 export interface CompanyData {

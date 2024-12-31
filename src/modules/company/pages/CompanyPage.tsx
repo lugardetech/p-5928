@@ -30,6 +30,8 @@ export default function CompanyPage() {
         return;
       }
 
+      console.log("Loading company data for user:", profile.user.id);
+
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("company_id")
@@ -72,6 +74,7 @@ export default function CompanyPage() {
       if (!profile.user) return;
 
       const dbData = adaptFormDataToDatabase(data);
+      console.log("Saving company data:", dbData);
 
       if (!company?.id) {
         // Criar nova empresa
@@ -150,7 +153,7 @@ export default function CompanyPage() {
               <DialogTitle>Dados da Empresa</DialogTitle>
             </DialogHeader>
             <CompanyForm
-              initialData={company || undefined}
+              initialData={company ? adaptDatabaseToFormData(company) : undefined}
               onSubmit={onSubmit}
               loading={loading}
             />
