@@ -10,7 +10,7 @@ interface TinyErpSettings {
   redirect_uri: string;
 }
 
-function isTinyErpSettings(settings: Json | null): settings is TinyErpSettings {
+function isTinyErpSettings(settings: Json): settings is TinyErpSettings {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
     return false;
   }
