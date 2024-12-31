@@ -1,3 +1,5 @@
+"use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -15,6 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const profileFormSchema = z.object({
   first_name: z.string().min(2, {
@@ -33,6 +36,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export function ProfileForm() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(true);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -115,6 +119,8 @@ export function ProfileForm() {
         title: "Perfil atualizado",
         description: "Suas informações foram atualizadas com sucesso.",
       });
+      
+      setIsEditing(false);
     } catch (error) {
       console.error("Erro ao atualizar perfil:", error);
       toast({
@@ -132,6 +138,38 @@ export function ProfileForm() {
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
+    );
+  }
+
+  if (!isEditing) {
+    const formValues = form.getValues();
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Informações Pessoais</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Nome</p>
+            <p className="text-lg">{formValues.first_name}</p>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Sobrenome</p>
+            <p className="text-lg">{formValues.last_name}</p>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Telefone</p>
+            <p className="text-lg">{formValues.phone}</p>
+          </div>
+          <Button 
+            onClick={() => setIsEditing(true)}
+            variant="outline"
+            className="w-full"
+          >
+            Editar Informações
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 

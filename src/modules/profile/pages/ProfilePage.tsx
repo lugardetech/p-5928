@@ -12,11 +12,8 @@ export default function ProfilePage() {
             <ProfileCard />
           </div>
           
-          <div className="space-y-6">
-            <div className="rounded-lg border p-8">
-              <h2 className="text-xl font-semibold mb-6">Informações Pessoais</h2>
-              <ProfileForm />
-            </div>
+          <div>
+            <ProfileForm />
           </div>
         </div>
       </div>
