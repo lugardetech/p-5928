@@ -45,6 +45,7 @@ export type Database = {
           state_tax_id: string | null
           tax_id: string
           trading_name: string | null
+          user_id: string | null
           website: string | null
         }
         Insert: {
@@ -61,6 +62,7 @@ export type Database = {
           state_tax_id?: string | null
           tax_id: string
           trading_name?: string | null
+          user_id?: string | null
           website?: string | null
         }
         Update: {
@@ -77,9 +79,18 @@ export type Database = {
           state_tax_id?: string | null
           tax_id?: string
           trading_name?: string | null
+          user_id?: string | null
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "companies_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integrations: {
         Row: {

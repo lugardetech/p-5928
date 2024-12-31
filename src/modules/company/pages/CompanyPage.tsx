@@ -7,7 +7,7 @@ import { CompanyForm } from "../components/CompanyForm";
 import { adaptFormDataToDatabase, adaptDatabaseToFormData } from "../utils/form-adapters";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CompanyDetails } from "../components/CompanyDetails";
 
 export default function CompanyPage() {
@@ -33,7 +33,6 @@ export default function CompanyPage() {
 
       console.log("Buscando perfil do usuário:", profile.user.id);
 
-      // Primeiro, buscar o perfil do usuário que contém o company_id
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("company_id")
@@ -50,7 +49,6 @@ export default function CompanyPage() {
       if (profileData?.company_id) {
         console.log("Buscando empresa com ID:", profileData.company_id);
         
-        // Depois, buscar os dados da empresa usando o company_id do perfil
         const { data: companyData, error: companyError } = await supabase
           .from("companies")
           .select("*")
@@ -100,7 +98,7 @@ export default function CompanyPage() {
         // Criar nova empresa
         const { data: newCompany, error: createError } = await supabase
           .from("companies")
-          .insert([dbData])
+          .insert([{ ...dbData, id: crypto.randomUUID() }])
           .select()
           .single();
 
@@ -171,6 +169,9 @@ export default function CompanyPage() {
           <DialogContent className="max-w-3xl">
             <DialogHeader>
               <DialogTitle>Dados da Empresa</DialogTitle>
+              <DialogDescription>
+                Preencha os dados da sua empresa para continuar.
+              </DialogDescription>
             </DialogHeader>
             <CompanyForm
               initialData={company ? adaptDatabaseToFormData(company) : undefined}
