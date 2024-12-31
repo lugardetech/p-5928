@@ -6,7 +6,28 @@ interface CompanyDetailsProps {
 }
 
 export function CompanyDetails({ company }: CompanyDetailsProps) {
-  if (!company) return null;
+  if (!company) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Dados da Empresa</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Nenhuma empresa cadastrada.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const address = company.address as {
+    street?: string;
+    number?: string;
+    complement?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
+    zip_code?: string;
+  } | null;
 
   return (
     <Card>
@@ -49,37 +70,37 @@ export function CompanyDetails({ company }: CompanyDetailsProps) {
           </div>
         </div>
 
-        {company.address && (
+        {address && (
           <div className="mt-6">
             <p className="text-sm font-medium text-muted-foreground mb-2">Endereço</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Rua</p>
-                <p>{company.address.street || '-'}</p>
+                <p>{address.street || '-'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Número</p>
-                <p>{company.address.number || '-'}</p>
+                <p>{address.number || '-'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Complemento</p>
-                <p>{company.address.complement || '-'}</p>
+                <p>{address.complement || '-'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Bairro</p>
-                <p>{company.address.neighborhood || '-'}</p>
+                <p>{address.neighborhood || '-'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Cidade</p>
-                <p>{company.address.city || '-'}</p>
+                <p>{address.city || '-'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Estado</p>
-                <p>{company.address.state || '-'}</p>
+                <p>{address.state || '-'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">CEP</p>
-                <p>{company.address.zip_code || '-'}</p>
+                <p>{address.zip_code || '-'}</p>
               </div>
             </div>
           </div>

@@ -13,52 +13,56 @@ import { CompanyDetails } from "../components/CompanyDetails";
 export default function CompanyPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [company, setCompany] = useState<CompanyFormData | null>(null);
+  const [company, setCompany] = useState<CompanyData | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    async function loadCompany() {
-      try {
-        const { data: profile } = await supabase.auth.getUser();
-        
-        if (!profile.user) return;
-
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("company_id")
-          .eq("id", profile.user.id)
-          .maybeSingle();
-
-        if (profileError) throw profileError;
-
-        if (profileData?.company_id) {
-          const { data: companyData, error: companyError } = await supabase
-            .from("companies")
-            .select("*")
-            .eq("id", profileData.company_id)
-            .maybeSingle();
-
-          if (companyError) throw companyError;
-
-          if (companyData) {
-            const formData = adaptDatabaseToFormData(companyData as CompanyData);
-            setCompany(formData);
-          }
-        }
-      } catch (error) {
-        console.error("Erro ao carregar empresa:", error);
-        toast({
-          variant: "destructive",
-          title: "Erro ao carregar dados da empresa",
-          description: "Por favor, tente novamente mais tarde.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-
     loadCompany();
   }, []);
+
+  async function loadCompany() {
+    try {
+      setLoading(true);
+      const { data: profile } = await supabase.auth.getUser();
+      
+      if (!profile.user) {
+        setLoading(false);
+        return;
+      }
+
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("company_id")
+        .eq("id", profile.user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (profileData?.company_id) {
+        const { data: companyData, error: companyError } = await supabase
+          .from("companies")
+          .select("*")
+          .eq("id", profileData.company_id)
+          .single();
+
+        if (companyError) throw companyError;
+
+        if (companyData) {
+          console.log("Company data loaded:", companyData);
+          setCompany(companyData);
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao carregar empresa:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao carregar dados da empresa",
+        description: "Por favor, tente novamente mais tarde.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function onSubmit(data: CompanyFormData) {
     try {
@@ -87,7 +91,7 @@ export default function CompanyPage() {
 
         if (updateProfileError) throw updateProfileError;
 
-        setCompany(adaptDatabaseToFormData(newCompany as CompanyData));
+        setCompany(newCompany);
       } else {
         // Atualizar empresa existente
         const { data: updatedCompany, error: updateError } = await supabase
@@ -100,7 +104,7 @@ export default function CompanyPage() {
         if (updateError) throw updateError;
 
         if (updatedCompany) {
-          setCompany(adaptDatabaseToFormData(updatedCompany as CompanyData));
+          setCompany(updatedCompany);
         }
       }
 
@@ -109,6 +113,9 @@ export default function CompanyPage() {
         description: "Os dados da empresa foram atualizados.",
       });
       setShowForm(false);
+      
+      // Recarregar os dados da empresa após salvar
+      await loadCompany();
     } catch (error) {
       console.error("Erro ao salvar empresa:", error);
       toast({
@@ -151,7 +158,7 @@ export default function CompanyPage() {
         </Dialog>
       </div>
       
-      {company && <CompanyDetails company={company} />}
+      <CompanyDetails company={company} />
     </div>
   );
 }

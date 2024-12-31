@@ -215,6 +215,7 @@ export type Database = {
       }
       produtos: {
         Row: {
+          category_id: string | null
           codigo: string
           created_at: string | null
           estoque: number
@@ -224,6 +225,7 @@ export type Database = {
           unidade: string
         }
         Insert: {
+          category_id?: string | null
           codigo: string
           created_at?: string | null
           estoque?: number
@@ -233,6 +235,7 @@ export type Database = {
           unidade: string
         }
         Update: {
+          category_id?: string | null
           codigo?: string
           created_at?: string | null
           estoque?: number
@@ -241,7 +244,15 @@ export type Database = {
           preco?: number
           unidade?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "produtos_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
