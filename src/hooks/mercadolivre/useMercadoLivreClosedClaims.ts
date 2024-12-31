@@ -18,9 +18,12 @@ export function useMercadoLivreClosedClaims() {
           throw new Error("Usuário não autenticado");
         }
 
-        const { data: response, error } = await supabase.functions.invoke<ClaimResponse>("mercadolivre-claims-closed", {
-          body: { userId: user.id }
-        });
+        const { data: response, error } = await supabase
+          .from('mercadolivre_claims')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'closed')
+          .order('date_created', { ascending: false });
 
         if (error) {
           console.error("❌ Erro ao buscar reclamações fechadas:", error);
@@ -33,13 +36,7 @@ export function useMercadoLivreClosedClaims() {
         }
 
         console.log("✅ Reclamações fechadas obtidas com sucesso:", response);
-        
-        if (!response) {
-          console.log("⚠️ Nenhuma reclamação fechada encontrada");
-          return [];
-        }
-
-        return response.data || [];
+        return response || [];
       } catch (error) {
         console.error("❌ Erro ao buscar reclamações fechadas:", error);
         toast({

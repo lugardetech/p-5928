@@ -5,10 +5,48 @@ import { columns } from "../components/claims-table/columns";
 import { useMercadoLivreClaims } from "@/hooks/mercadolivre/useMercadoLivreClaims";
 import { useMercadoLivreClosedClaims } from "@/hooks/mercadolivre/useMercadoLivreClosedClaims";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Sync } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function MercadoLivrePage() {
   const { data: openClaims, isLoading: isLoadingOpen } = useMercadoLivreClaims();
-  const { data: closedClaims, isLoading: isLoadingClosed } = useMercadoLivreClosedClaims();
+  const { data: closedClaims, isLoading: isLoadingClosed, refetch: refetchClosed } = useMercadoLivreClosedClaims();
+  const { toast } = useToast();
+
+  const handleSyncClosedClaims = async () => {
+    try {
+      console.log("=== Sincronizando reclamações fechadas ===");
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Usuário não autenticado");
+      }
+
+      const { data, error } = await supabase.functions.invoke("mercadolivre-claims-closed", {
+        body: { userId: user.id }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Sincronização concluída",
+        description: "As reclamações fechadas foram sincronizadas com sucesso!"
+      });
+
+      refetchClosed();
+    } catch (error) {
+      console.error("❌ Erro ao sincronizar reclamações fechadas:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro na sincronização",
+        description: "Ocorreu um erro ao sincronizar as reclamações fechadas."
+      });
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -24,7 +62,18 @@ export default function MercadoLivrePage() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-2xl font-semibold mb-4">Reclamações</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">Reclamações</h2>
+            <Button 
+              onClick={handleSyncClosedClaims}
+              variant="outline"
+              className="gap-2"
+            >
+              <Sync className="h-4 w-4" />
+              Sincronizar Fechadas
+            </Button>
+          </div>
+          
           <Tabs defaultValue="open" className="w-full">
             <TabsList>
               <TabsTrigger value="open">Abertas</TabsTrigger>
