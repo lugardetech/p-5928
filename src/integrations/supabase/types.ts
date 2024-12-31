@@ -30,6 +30,57 @@ export type Database = {
         }
         Relationships: []
       }
+      companies: {
+        Row: {
+          active: boolean | null
+          address: Json | null
+          created_at: string | null
+          email: string | null
+          id: string
+          logo_url: string | null
+          municipal_tax_id: string | null
+          name: string
+          phone: string | null
+          settings: Json | null
+          state_tax_id: string | null
+          tax_id: string
+          trading_name: string | null
+          website: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: Json | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          municipal_tax_id?: string | null
+          name: string
+          phone?: string | null
+          settings?: Json | null
+          state_tax_id?: string | null
+          tax_id: string
+          trading_name?: string | null
+          website?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: Json | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          municipal_tax_id?: string | null
+          name?: string
+          phone?: string | null
+          settings?: Json | null
+          state_tax_id?: string | null
+          tax_id?: string
+          trading_name?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       integrations: {
         Row: {
           access_token: string | null
@@ -191,6 +242,59 @@ export type Database = {
           unidade?: string
         }
         Relationships: []
+      }
+      profiles: {
+        Row: {
+          active: boolean | null
+          avatar_url: string | null
+          company_id: string | null
+          created_at: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          permissions: Json | null
+          phone: string | null
+          role: string | null
+          settings: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          permissions?: Json | null
+          phone?: string | null
+          role?: string | null
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          permissions?: Json | null
+          phone?: string | null
+          role?: string | null
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       support_tickets: {
         Row: {
