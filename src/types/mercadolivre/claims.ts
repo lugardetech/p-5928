@@ -1,5 +1,5 @@
 export interface MercadoLivreClaim {
-  id: number;
+  id: string | number;
   resource_id: number;
   status: string;
   type: string;

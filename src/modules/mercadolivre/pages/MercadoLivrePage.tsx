@@ -6,7 +6,7 @@ import { useMercadoLivreClaims } from "@/hooks/mercadolivre/useMercadoLivreClaim
 import { useMercadoLivreClosedClaims } from "@/hooks/mercadolivre/useMercadoLivreClosedClaims";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Sync } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -69,7 +69,7 @@ export default function MercadoLivrePage() {
               variant="outline"
               className="gap-2"
             >
-              <Sync className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4" />
               Sincronizar Fechadas
             </Button>
           </div>
