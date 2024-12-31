@@ -26,12 +26,14 @@ export default function CompanyPage() {
       const { data: profile } = await supabase.auth.getUser();
       
       if (!profile.user) {
+        console.log("Usuário não autenticado");
         setLoading(false);
         return;
       }
 
-      console.log("Loading company data for user:", profile.user.id);
+      console.log("Buscando perfil do usuário:", profile.user.id);
 
+      // Primeiro, buscar o perfil do usuário que contém o company_id
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("company_id")
@@ -43,7 +45,12 @@ export default function CompanyPage() {
         throw profileError;
       }
 
+      console.log("Perfil encontrado:", profileData);
+
       if (profileData?.company_id) {
+        console.log("Buscando empresa com ID:", profileData.company_id);
+        
+        // Depois, buscar os dados da empresa usando o company_id do perfil
         const { data: companyData, error: companyError } = await supabase
           .from("companies")
           .select("*")
@@ -56,9 +63,13 @@ export default function CompanyPage() {
         }
 
         if (companyData) {
-          console.log("Company data loaded:", companyData);
+          console.log("Dados da empresa carregados:", companyData);
           setCompany(companyData);
+        } else {
+          console.log("Nenhuma empresa encontrada para o ID:", profileData.company_id);
         }
+      } else {
+        console.log("Usuário não possui empresa vinculada");
       }
     } catch (error) {
       console.error("Erro ao carregar empresa:", error);
@@ -77,10 +88,13 @@ export default function CompanyPage() {
       setLoading(true);
       
       const { data: profile } = await supabase.auth.getUser();
-      if (!profile.user) return;
+      if (!profile.user) {
+        console.log("Usuário não autenticado");
+        return;
+      }
 
       const dbData = adaptFormDataToDatabase(data);
-      console.log("Saving company data:", dbData);
+      console.log("Salvando dados da empresa:", dbData);
 
       if (!company?.id) {
         // Criar nova empresa
