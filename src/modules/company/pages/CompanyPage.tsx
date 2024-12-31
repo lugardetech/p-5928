@@ -5,11 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CompanyFormData, CompanyData } from "../types";
 import { CompanyForm } from "../components/CompanyForm";
 import { adaptFormDataToDatabase, adaptDatabaseToFormData } from "../utils/form-adapters";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { CompanyDetails } from "../components/CompanyDetails";
 
 export default function CompanyPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [company, setCompany] = useState<CompanyFormData | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     async function loadCompany() {
@@ -81,20 +86,29 @@ export default function CompanyPage() {
           .eq("id", profile.user.id);
 
         if (updateProfileError) throw updateProfileError;
+
+        setCompany(adaptDatabaseToFormData(newCompany as CompanyData));
       } else {
         // Atualizar empresa existente
-        const { error: updateError } = await supabase
+        const { data: updatedCompany, error: updateError } = await supabase
           .from("companies")
           .update(dbData)
-          .eq("id", company.id);
+          .eq("id", company.id)
+          .select()
+          .single();
 
         if (updateError) throw updateError;
+
+        if (updatedCompany) {
+          setCompany(adaptDatabaseToFormData(updatedCompany as CompanyData));
+        }
       }
 
       toast({
         title: "Empresa salva com sucesso!",
         description: "Os dados da empresa foram atualizados.",
       });
+      setShowForm(false);
     } catch (error) {
       console.error("Erro ao salvar empresa:", error);
       toast({
@@ -117,18 +131,27 @@ export default function CompanyPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>Dados da Empresa</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CompanyForm
-            initialData={company || undefined}
-            onSubmit={onSubmit}
-            loading={loading}
-          />
-        </CardContent>
-      </Card>
+      <div className="flex justify-end mb-6">
+        <Dialog open={showForm} onOpenChange={setShowForm}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Settings className="h-4 w-4" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Dados da Empresa</DialogTitle>
+            </DialogHeader>
+            <CompanyForm
+              initialData={company || undefined}
+              onSubmit={onSubmit}
+              loading={loading}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+      
+      {company && <CompanyDetails company={company} />}
     </div>
   );
 }
