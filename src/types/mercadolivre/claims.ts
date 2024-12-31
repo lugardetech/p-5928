@@ -6,12 +6,7 @@ export interface MercadoLivreClaim {
   fulfilled: boolean;
   last_updated: string;
   parent_id: string;
-  players: {
-    role: string;
-    type: string;
-    user_id: number;
-    available_actions: string[];
-  }[];
+  players: Player[];
   quantity_type: string;
   reason_id: string;
   resource: string;
@@ -22,4 +17,20 @@ export interface MercadoLivreClaim {
   status: string;
   type: string;
   user_id: string;
+}
+
+export interface Player {
+  role: string;
+  type: string;
+  user_id: number;
+  available_actions: string[];
+}
+
+export interface ClaimResponse {
+  paging: {
+    total: number;
+    offset: number;
+    limit: number;
+  };
+  data: MercadoLivreClaim[];
 }

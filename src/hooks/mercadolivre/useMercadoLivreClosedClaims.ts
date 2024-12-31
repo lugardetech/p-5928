@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ClaimResponse } from "@/types/mercadolivre/claims";
+import { MercadoLivreClaim } from "@/types/mercadolivre/claims";
 import { useToast } from "@/hooks/use-toast";
 
 export function useMercadoLivreClosedClaims() {
@@ -36,7 +36,14 @@ export function useMercadoLivreClosedClaims() {
         }
 
         console.log("✅ Reclamações fechadas obtidas com sucesso:", response);
-        return response || [];
+
+        // Garantir que os players são convertidos corretamente do JSON
+        const claims = (response || []).map(claim => ({
+          ...claim,
+          players: Array.isArray(claim.players) ? claim.players : []
+        })) as MercadoLivreClaim[];
+
+        return claims;
       } catch (error) {
         console.error("❌ Erro ao buscar reclamações fechadas:", error);
         toast({
