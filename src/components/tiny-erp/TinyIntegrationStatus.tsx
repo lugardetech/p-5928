@@ -10,13 +10,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CredentialsForm } from "./CredentialsForm";
+import { useState } from "react";
 
 export function TinyIntegrationStatus() {
-  const { data: status, isLoading } = useIntegrationStatus();
-
-  if (isLoading) {
-    return <div>Carregando...</div>;
-  }
+  const { hasCredentials, isConnected, handleAuth } = useIntegrationStatus();
+  const [open, setOpen] = useState(false);
 
   const getAuthUrl = () => {
     const settings = status?.settings as TinyErpSettings | undefined;
@@ -40,12 +38,12 @@ export function TinyIntegrationStatus() {
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <span className="font-medium">Credenciais configuradas:</span>
-            {status?.isConfigured ? (
+            {hasCredentials ? (
               <CheckCircle className="h-5 w-5 text-green-500" />
             ) : (
               <XCircle className="h-5 w-5 text-red-500" />
             )}
-            <Dialog>
+            <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Settings className="h-4 w-4" />
@@ -55,11 +53,11 @@ export function TinyIntegrationStatus() {
                 <DialogHeader>
                   <DialogTitle>Configurar Credenciais</DialogTitle>
                 </DialogHeader>
-                <CredentialsForm />
+                <CredentialsForm onSuccess={() => setOpen(false)} />
               </DialogContent>
             </Dialog>
           </div>
-          {!status?.isConfigured && (
+          {!hasCredentials && (
             <p className="text-sm text-muted-foreground">
               Configure suas credenciais do Tiny ERP para começar.
             </p>
@@ -71,22 +69,20 @@ export function TinyIntegrationStatus() {
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <span className="font-medium">Conta autenticada:</span>
-            {status?.isAuthenticated ? (
+            {isConnected ? (
               <CheckCircle className="h-5 w-5 text-green-500" />
             ) : (
               <XCircle className="h-5 w-5 text-red-500" />
             )}
           </div>
-          {!status?.isAuthenticated && status?.isConfigured && (
+          {!isConnected && hasCredentials && (
             <p className="text-sm text-muted-foreground">
               Clique no botão ao lado para autenticar sua conta do Tiny ERP.
             </p>
           )}
         </div>
-        {status?.isConfigured && !status?.isAuthenticated && (
-          <Button asChild>
-            <a href={getAuthUrl()}>Autenticar</a>
-          </Button>
+        {hasCredentials && !isConnected && (
+          <Button onClick={handleAuth}>Autenticar</Button>
         )}
       </div>
     </div>

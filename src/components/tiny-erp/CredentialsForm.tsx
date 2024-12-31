@@ -7,7 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { CredentialsFormFields, credentialsSchema, type CredentialsForm as CredentialsFormType } from "./forms/CredentialsFormFields";
 
-export const CredentialsForm = () => {
+interface CredentialsFormProps {
+  onSuccess?: () => void;
+}
+
+export const CredentialsForm = ({ onSuccess }: CredentialsFormProps) => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -101,6 +105,8 @@ export const CredentialsForm = () => {
         title: "Credenciais salvas com sucesso!",
         description: "Agora você pode prosseguir com a autenticação.",
       });
+
+      onSuccess?.();
     } catch (error) {
       console.error("Erro ao salvar credenciais:", error);
       toast({
