@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/hooks/use-toast";
 
 interface ProfileData {
   first_name: string | null;
@@ -20,6 +21,7 @@ export function ProfileCard() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
+          console.log("Usuário não autenticado");
           setLoading(false);
           return;
         }
@@ -34,6 +36,11 @@ export function ProfileCard() {
 
         if (error) {
           console.error("Erro ao carregar perfil:", error);
+          toast({
+            variant: "destructive",
+            title: "Erro",
+            description: "Não foi possível carregar os dados do perfil.",
+          });
           setLoading(false);
           return;
         }
@@ -44,6 +51,11 @@ export function ProfileCard() {
         });
       } catch (error) {
         console.error("Erro ao carregar perfil:", error);
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Não foi possível carregar os dados do perfil.",
+        });
       } finally {
         setLoading(false);
       }

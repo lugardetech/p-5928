@@ -11,7 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -31,7 +31,6 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export function ProfileForm() {
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -49,6 +48,7 @@ export function ProfileForm() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
+          console.log("Usuário não autenticado");
           setInitialLoading(false);
           return;
         }
@@ -61,7 +61,7 @@ export function ProfileForm() {
           .eq("id", user.id)
           .maybeSingle();
 
-        if (error) {
+        if (error && error.code !== 'PGRST116') {
           console.error("Erro ao carregar perfil:", error);
           toast({
             variant: "destructive",
@@ -91,7 +91,7 @@ export function ProfileForm() {
     }
 
     loadProfile();
-  }, [form, toast]);
+  }, [form]);
 
   async function onSubmit(data: ProfileFormValues) {
     setLoading(true);
