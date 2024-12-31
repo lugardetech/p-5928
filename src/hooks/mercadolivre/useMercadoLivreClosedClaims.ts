@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ClaimResponse, MercadoLivreClaim } from "@/types/mercadolivre/claims";
+import { ClaimResponse } from "@/types/mercadolivre/claims";
 import { useToast } from "@/hooks/use-toast";
 
 export function useMercadoLivreClosedClaims() {

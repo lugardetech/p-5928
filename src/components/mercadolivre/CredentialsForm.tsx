@@ -22,25 +22,6 @@ export const CredentialsForm = () => {
     getCurrentUser();
   }, []);
 
-  const { data: integration } = useQuery({
-    queryKey: ["mercadolivre-integration"],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from("integrations")
-          .select("id")
-          .eq("name", "mercado_livre")
-          .maybeSingle();
-
-        if (error) throw error;
-        return data;
-      } catch (error) {
-        console.error("Erro ao buscar integração:", error);
-        throw error;
-      }
-    },
-  });
-
   const form = useForm<CredentialsFormType>({
     resolver: zodResolver(credentialsSchema),
     defaultValues: {
@@ -52,19 +33,15 @@ export const CredentialsForm = () => {
 
   const onSubmit = async (data: CredentialsFormType) => {
     try {
-      if (!integration?.id) {
-        throw new Error("Integração não encontrada");
-      }
-
       if (!userId) {
         throw new Error("Usuário não autenticado");
       }
 
       const { data: existingIntegration, error: fetchError } = await supabase
-        .from("user_integrations")
+        .from("integrations")
         .select("id")
         .eq("user_id", userId)
-        .eq("integration_id", integration.id)
+        .eq("name", "mercado_livre")
         .maybeSingle();
 
       if (fetchError && fetchError.code !== "PGRST116") {
@@ -76,7 +53,7 @@ export const CredentialsForm = () => {
       
       if (existingIntegration) {
         const { error: updateError, data: updated } = await supabase
-          .from("user_integrations")
+          .from("integrations")
           .update({
             settings: {
               client_id: data.client_id,
@@ -91,9 +68,9 @@ export const CredentialsForm = () => {
         savedData = updated;
       } else {
         const { error: insertError, data: inserted } = await supabase
-          .from("user_integrations")
+          .from("integrations")
           .insert({
-            integration_id: integration.id,
+            name: "mercado_livre",
             user_id: userId,
             settings: {
               client_id: data.client_id,
