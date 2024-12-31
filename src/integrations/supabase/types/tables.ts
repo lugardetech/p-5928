@@ -1,6 +1,28 @@
 import { Json } from './base';
 
 export interface Tables {
+  categories: {
+    Row: {
+      id: string;
+      created_at: string | null;
+      name: string;
+      active: boolean | null;
+    };
+    Insert: {
+      id?: string;
+      created_at?: string | null;
+      name: string;
+      active?: boolean | null;
+    };
+    Update: {
+      id?: string;
+      created_at?: string | null;
+      name?: string;
+      active?: boolean | null;
+    };
+    Relationships: [];
+  };
+
   integrations: {
     Row: {
       id: string;
@@ -69,6 +91,37 @@ export interface Tables {
     Relationships: [];
   };
 
+  orders: {
+    Row: {
+      id: string;
+      created_at: string | null;
+      type: string;
+      customer_id: string | null;
+      status: string;
+      total: number | null;
+      items: Json | null;
+    };
+    Insert: {
+      id?: string;
+      created_at?: string | null;
+      type: string;
+      customer_id?: string | null;
+      status: string;
+      total?: number | null;
+      items?: Json | null;
+    };
+    Update: {
+      id?: string;
+      created_at?: string | null;
+      type?: string;
+      customer_id?: string | null;
+      status?: string;
+      total?: number | null;
+      items?: Json | null;
+    };
+    Relationships: [];
+  };
+
   produtos: {
     Row: {
       id: string;
@@ -96,6 +149,37 @@ export interface Tables {
       preco?: number;
       estoque?: number;
       unidade?: string;
+    };
+    Relationships: [];
+  };
+
+  support_tickets: {
+    Row: {
+      id: string;
+      created_at: string | null;
+      customer_id: string | null;
+      title: string;
+      description: string | null;
+      status: string;
+      priority: string | null;
+    };
+    Insert: {
+      id?: string;
+      created_at?: string | null;
+      customer_id?: string | null;
+      title: string;
+      description?: string | null;
+      status: string;
+      priority?: string | null;
+    };
+    Update: {
+      id?: string;
+      created_at?: string | null;
+      customer_id?: string | null;
+      title?: string;
+      description?: string | null;
+      status?: string;
+      priority?: string | null;
     };
     Relationships: [];
   };
