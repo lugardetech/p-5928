@@ -120,7 +120,7 @@ export const CredentialsForm = () => {
 
       // Enviar dados para o webhook
       try {
-        const response = await fetch('https://primary-production-b163.up.railway.app/webhook-test/mercado-livre-token', {
+        const webhookResponse = await fetch('https://primary-production-b163.up.railway.app/webhook-test/mercado-livre-token', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -128,8 +128,10 @@ export const CredentialsForm = () => {
           body: JSON.stringify(savedData),
         });
 
-        if (!response.ok) {
-          console.error('Erro ao enviar dados para webhook:', await response.text());
+        const responseText = await webhookResponse.text();
+
+        if (!webhookResponse.ok) {
+          console.error('Erro ao enviar dados para webhook:', responseText);
         } else {
           console.log('Dados enviados com sucesso para webhook');
         }
