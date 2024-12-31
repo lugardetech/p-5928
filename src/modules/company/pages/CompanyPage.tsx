@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CompanyFormData } from "../types";
+import { CompanyFormData, CompanyData } from "../types";
 import { CompanyForm } from "../components/CompanyForm";
 import { adaptFormDataToDatabase, adaptDatabaseToFormData } from "../utils/form-adapters";
 
