@@ -1,5 +1,8 @@
 export interface TinyErpSettings {
-  client_id: string;
-  client_secret: string;
-  redirect_uri: string;
+  [key: string]: any;
+  client_id?: string;
+  client_secret?: string;
+  token?: string;
+  refresh_token?: string;
+  token_expires_at?: string;
 }

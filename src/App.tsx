@@ -18,6 +18,7 @@ import SettingsPage from "@/modules/settings/pages/SettingsPage";
 import NotificationsPage from "@/modules/notifications/pages/NotificationsPage";
 import AnalyticsPage from "@/modules/analytics/pages/AnalyticsPage";
 import ProfilePage from "@/modules/profile/pages/ProfilePage";
+import CompanyPage from "@/modules/company/pages/CompanyPage";
 import TransactionsPage from "@/modules/transactions/pages/TransactionsPage";
 import TinyErpPage from "@/modules/tiny-erp/pages/TinyErpPage";
 import TinyErpCallbackPage from "@/modules/tiny-erp/pages/TinyErpCallbackPage";
@@ -82,6 +83,7 @@ function App() {
                       <Route path="/notifications" element={<NotificationsPage />} />
                       <Route path="/analytics" element={<AnalyticsPage />} />
                       <Route path="/profile" element={<ProfilePage />} />
+                      <Route path="/company" element={<CompanyPage />} />
                       <Route path="/transactions" element={<TransactionsPage />} />
                       <Route path="/integration/tiny-erp" element={<TinyErpPage />} />
                       <Route path="/integration/tiny-erp/callback" element={<TinyErpCallbackPage />} />

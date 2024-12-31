@@ -11,6 +11,8 @@ import {
   Bell,
   BarChart3,
   Store,
+  Building2,
+  UserCircle,
   Truck,
   RotateCcw,
   HeadphonesIcon,
@@ -34,6 +36,26 @@ export function Sidebar() {
               <Link to="/">
                 <LayoutDashboard className="mr-2 h-4 w-4" />
                 Dashboard
+              </Link>
+            </Button>
+            <Button
+              variant={location.pathname === "/profile" ? "secondary" : "ghost"}
+              className="w-full justify-start"
+              asChild
+            >
+              <Link to="/profile">
+                <UserCircle className="mr-2 h-4 w-4" />
+                Meu Perfil
+              </Link>
+            </Button>
+            <Button
+              variant={location.pathname === "/company" ? "secondary" : "ghost"}
+              className="w-full justify-start"
+              asChild
+            >
+              <Link to="/company">
+                <Building2 className="mr-2 h-4 w-4" />
+                Empresa
               </Link>
             </Button>
             <Button
@@ -160,7 +182,6 @@ export function Sidebar() {
             </Button>
           </div>
         </div>
-
       </div>
     </div>
   );
