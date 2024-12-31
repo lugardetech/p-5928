@@ -16,6 +16,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { CompanyFormData } from "../types";
+import { adaptFormDataToDatabase, adaptDatabaseToFormData } from "../utils/form-adapters";
 
 const companyFormSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -37,14 +39,12 @@ const companyFormSchema = z.object({
   }).optional(),
 });
 
-type CompanyFormValues = z.infer<typeof companyFormSchema>;
-
 export default function CompanyPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [company, setCompany] = useState<any>(null);
+  const [company, setCompany] = useState<CompanyFormData | null>(null);
 
-  const form = useForm<CompanyFormValues>({
+  const form = useForm<CompanyFormData>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
       name: "",
@@ -91,8 +91,9 @@ export default function CompanyPage() {
 
           if (companyError) throw companyError;
 
-          setCompany(companyData);
-          form.reset(companyData);
+          const formData = adaptDatabaseToFormData(companyData);
+          setCompany(formData);
+          form.reset(formData);
         }
       } catch (error) {
         console.error("Erro ao carregar empresa:", error);
@@ -109,27 +110,26 @@ export default function CompanyPage() {
     loadCompany();
   }, []);
 
-  async function onSubmit(data: CompanyFormValues) {
+  async function onSubmit(data: CompanyFormData) {
     try {
       setLoading(true);
       
       const { data: profile } = await supabase.auth.getUser();
       if (!profile.user) return;
 
+      const dbData = adaptFormDataToDatabase(data);
       let companyId = company?.id;
 
       if (!companyId) {
-        // Criar nova empresa
         const { data: newCompany, error: createError } = await supabase
           .from("companies")
-          .insert([data])
+          .insert([dbData])
           .select()
           .single();
 
         if (createError) throw createError;
         companyId = newCompany.id;
 
-        // Atualizar perfil com company_id
         const { error: updateProfileError } = await supabase
           .from("profiles")
           .update({ company_id: companyId })
@@ -137,10 +137,9 @@ export default function CompanyPage() {
 
         if (updateProfileError) throw updateProfileError;
       } else {
-        // Atualizar empresa existente
         const { error: updateError } = await supabase
           .from("companies")
-          .update(data)
+          .update(dbData)
           .eq("id", companyId);
 
         if (updateError) throw updateError;

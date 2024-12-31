@@ -3,14 +3,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Json } from "@/integrations/supabase/types";
+import { TinyErpSettings } from "@/types/tiny-erp";
 
-interface TinyErpSettings {
-  client_id: string;
-  client_secret: string;
-  redirect_uri: string;
-}
-
-function isTinyErpSettings(settings: Json): settings is TinyErpSettings {
+function isTinyErpSettings(settings: Json | null): settings is TinyErpSettings {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
     return false;
   }
