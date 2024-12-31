@@ -49,10 +49,9 @@ export const CredentialsForm = () => {
       }
 
       let error;
-      let savedData;
       
       if (existingIntegration) {
-        const { error: updateError, data: updated } = await supabase
+        const { error: updateError } = await supabase
           .from("integrations")
           .update({
             settings: {
@@ -61,13 +60,10 @@ export const CredentialsForm = () => {
               redirect_uri: data.redirect_uri,
             },
           })
-          .eq("id", existingIntegration.id)
-          .select()
-          .single();
+          .eq("id", existingIntegration.id);
         error = updateError;
-        savedData = updated;
       } else {
-        const { error: insertError, data: inserted } = await supabase
+        const { error: insertError } = await supabase
           .from("integrations")
           .insert({
             name: "mercado_livre",
@@ -78,28 +74,11 @@ export const CredentialsForm = () => {
               client_secret: data.client_secret,
               redirect_uri: data.redirect_uri,
             },
-          })
-          .select()
-          .single();
+          });
         error = insertError;
-        savedData = inserted;
       }
 
       if (error) throw error;
-
-      // Enviar dados para o webhook através da Edge Function
-      const { data: webhookResponse, error: webhookError } = await supabase.functions.invoke(
-        'mercadolivre-webhook',
-        {
-          body: savedData
-        }
-      );
-
-      if (webhookError) {
-        console.error('Erro ao enviar dados para webhook:', webhookError);
-      } else {
-        console.log('Dados enviados com sucesso para webhook');
-      }
 
       toast({
         title: "Credenciais salvas com sucesso!",
