@@ -13,7 +13,6 @@ import {
   Store,
   Building2,
   UserCircle,
-  Truck,
   RotateCcw,
   HeadphonesIcon,
   AlertCircle,
@@ -23,10 +22,10 @@ export function Sidebar() {
   const location = useLocation();
 
   return (
-    <div className="pb-12 min-h-screen">
+    <div className="pb-12 min-h-screen border-r">
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold">Painel</h2>
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Painel</h2>
           <div className="space-y-1">
             <Button
               variant={location.pathname === "/" ? "secondary" : "ghost"}
@@ -112,7 +111,7 @@ export function Sidebar() {
         </div>
 
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold">Gestão</h2>
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Gestão</h2>
           <div className="space-y-1">
             <Button
               variant={location.pathname === "/settings" ? "secondary" : "ghost"}
@@ -148,7 +147,7 @@ export function Sidebar() {
         </div>
 
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold">Integrações</h2>
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Integrações</h2>
           <div className="space-y-1">
             <Button
               variant={location.pathname === "/integration/tiny-erp" ? "secondary" : "ghost"}
