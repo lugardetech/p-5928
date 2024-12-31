@@ -8,67 +8,66 @@ export type Json =
 
 export interface Database {
   public: {
-    Tables: Tables;
+    Tables: {
+      categories: {
+        Row: {
+          id: string;
+          created_at: string | null;
+          name: string;
+          active: boolean | null;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string | null;
+          name: string;
+          active?: boolean | null;
+        };
+        Update: {
+          id?: string;
+          created_at?: string | null;
+          name?: string;
+          active?: boolean | null;
+        };
+        Relationships: [];
+      };
+      produtos: {
+        Row: {
+          id: string;
+          created_at: string | null;
+          nome: string;
+          codigo: string;
+          preco: number;
+          estoque: number;
+          unidade: string;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string | null;
+          nome: string;
+          codigo: string;
+          preco?: number;
+          estoque?: number;
+          unidade: string;
+        };
+        Update: {
+          id?: string;
+          created_at?: string | null;
+          nome?: string;
+          codigo?: string;
+          preco?: number;
+          estoque?: number;
+          unidade?: string;
+        };
+        Relationships: [];
+      };
+    };
     Views: {};
     Functions: {};
     Enums: {};
     CompositeTypes: {};
-  }
+  };
 }
 
-export type Tables<
-  PublicTableNameOrOptions extends keyof Tables | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Row: infer R;
-    }
-    ? R
-    : never
-  : PublicTableNameOrOptions extends keyof Tables
-    ? Tables[PublicTableNameOrOptions] extends {
-        Row: infer R;
-      }
-      ? R
-      : never
-    : never;
-
-export type TablesInsert<
-  PublicTableNameOrOptions extends keyof Tables | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I;
-    }
-    ? I
-    : never
-  : PublicTableNameOrOptions extends keyof Tables
-    ? Tables[PublicTableNameOrOptions] extends {
-        Insert: infer I;
-      }
-      ? I
-      : never
-    : never;
-
-export type TablesUpdate<
-  PublicTableNameOrOptions extends keyof Tables | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U;
-    }
-    ? U
-    : never
-  : PublicTableNameOrOptions extends keyof Tables
-    ? Tables[PublicTableNameOrOptions] extends {
-        Update: infer U;
-      }
-      ? U
-      : never
-    : never;
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row'];
+export type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
+export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update'];

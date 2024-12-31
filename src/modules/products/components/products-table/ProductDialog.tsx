@@ -20,7 +20,7 @@ export const ProductDialog = ({ children, productData }: ProductDialogProps) => 
   const handleEdit = async () => {
     try {
       const { data: product, error } = await supabase
-        .from('products')
+        .from('produtos')
         .select(`
           *,
           category:categories(*)

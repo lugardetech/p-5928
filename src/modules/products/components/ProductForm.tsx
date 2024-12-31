@@ -55,9 +55,9 @@ export function ProductForm({ initialData, onSuccess }: ProductFormProps) {
 
       // Verificar se o SKU já existe
       const { data: existingProduct } = await supabase
-        .from("products")
+        .from('produtos')
         .select("id")
-        .eq("sku", formData.sku)
+        .eq('codigo', formData.sku)
         .maybeSingle();
 
       if (existingProduct) {
@@ -81,7 +81,6 @@ export function ProductForm({ initialData, onSuccess }: ProductFormProps) {
 
         if (uploadError) throw uploadError;
 
-        // Construir a URL pública completa da imagem
         const { data: { publicUrl } } = supabase.storage
           .from('product-images')
           .getPublicUrl(fileName);
@@ -91,15 +90,12 @@ export function ProductForm({ initialData, onSuccess }: ProductFormProps) {
       }
 
       // Inserir produto
-      const { error } = await supabase.from("products").insert({
-        name: formData.name,
-        description: formData.description,
-        sku: formData.sku,
-        price: parseFloat(formData.price),
-        cost_price: formData.cost_price ? parseFloat(formData.cost_price) : null,
-        stock_quantity: parseInt(formData.stock_quantity),
-        min_stock_quantity: formData.min_stock_quantity ? parseInt(formData.min_stock_quantity) : null,
-        category_id: formData.category_id || null,
+      const { error } = await supabase.from('produtos').insert({
+        nome: formData.name,
+        codigo: formData.sku,
+        preco: parseFloat(formData.price),
+        estoque: parseInt(formData.stock_quantity),
+        unidade: 'UN',
         image_url: imageUrl,
       });
 

@@ -14,18 +14,18 @@ export default function ProductsPage() {
       console.log("=== Buscando produtos ===");
       
       const { data, error } = await supabase
-        .from('products')
+        .from('produtos')
         .select(`
           id,
-          sku,
-          name,
-          price,
-          stock_quantity,
+          codigo as sku,
+          nome as name,
+          preco as price,
+          estoque as stock_quantity,
           active,
           image_url,
           category:categories(name)
         `)
-        .order('name');
+        .order('nome');
 
       if (error) {
         console.error("❌ Erro ao buscar produtos:", error);
@@ -41,7 +41,6 @@ export default function ProductsPage() {
     try {
       console.log("🗑️ Tentando excluir produtos:", selectedProducts);
 
-      // Garantir que temos IDs válidos
       const productIds = selectedProducts.map(p => p.id).filter(Boolean);
       
       if (productIds.length === 0) {
@@ -49,7 +48,7 @@ export default function ProductsPage() {
       }
 
       const { error } = await supabase
-        .from('products')
+        .from('produtos')
         .delete()
         .in('id', productIds);
 
