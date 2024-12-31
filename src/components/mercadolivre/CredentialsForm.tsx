@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { CredentialsFormFields, credentialsSchema, type CredentialsForm } from "./forms/CredentialsFormFields";
+import { CredentialsFormFields, credentialsSchema, type CredentialsForm as CredentialsFormType } from "./forms/CredentialsFormFields";
 
 export const CredentialsForm = () => {
   const { toast } = useToast();
@@ -41,7 +41,7 @@ export const CredentialsForm = () => {
     },
   });
 
-  const form = useForm<CredentialsForm>({
+  const form = useForm<CredentialsFormType>({
     resolver: zodResolver(credentialsSchema),
     defaultValues: {
       client_id: "",
@@ -50,7 +50,7 @@ export const CredentialsForm = () => {
     },
   });
 
-  const onSubmit = async (data: CredentialsForm) => {
+  const onSubmit = async (data: CredentialsFormType) => {
     try {
       if (!integration?.id) {
         throw new Error("Integração não encontrada");
