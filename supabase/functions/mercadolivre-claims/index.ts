@@ -5,6 +5,43 @@ import { corsHeaders } from "../_shared/cors.ts";
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+async function fetchAllClaims(accessToken: string) {
+  const claims = [];
+  let offset = 0;
+  const limit = 50;
+  let hasMore = true;
+
+  while (hasMore) {
+    console.log(`🔄 Buscando reclamações com offset ${offset}...`);
+    
+    const response = await fetch(
+      `https://api.mercadolibre.com/post-purchase/v1/claims/search?status=opened&limit=${limit}&offset=${offset}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Erro na API do Mercado Livre:", errorText);
+      throw new Error(`Erro na API do Mercado Livre: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    claims.push(...data.data);
+    
+    console.log(`✅ Recebidas ${data.data.length} reclamações`);
+    
+    // Verifica se há mais páginas
+    hasMore = data.data.length === limit && data.paging.total > (offset + limit);
+    offset += limit;
+  }
+
+  return claims;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -41,24 +78,12 @@ serve(async (req) => {
 
     console.log("✅ Integração encontrada");
 
-    // Buscar reclamações abertas na API do Mercado Livre
-    const response = await fetch('https://api.mercadolibre.com/post-purchase/v1/claims/search?status=opened', {
-      headers: {
-        'Authorization': `Bearer ${integration.access_token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("❌ Erro na API do Mercado Livre:", errorText);
-      throw new Error(`Erro na API do Mercado Livre: ${response.statusText}`);
-    }
-
-    const claims = await response.json();
-    console.log("✅ Reclamações obtidas com sucesso:", claims);
+    // Buscar todas as reclamações abertas na API do Mercado Livre
+    const claims = await fetchAllClaims(integration.access_token);
+    console.log(`✅ Total de ${claims.length} reclamações obtidas`);
 
     // Salvar/atualizar reclamações no banco
-    for (const claim of claims.data) {
+    for (const claim of claims) {
       const { error: upsertError } = await supabase
         .from('mercadolivre_claims')
         .upsert({
