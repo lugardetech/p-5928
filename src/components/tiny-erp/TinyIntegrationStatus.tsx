@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Settings2 } from "lucide-react";
-import { CredentialsForm } from "./CredentialsForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIntegrationStatus } from "@/hooks/tiny-erp/useIntegrationStatus";
 
@@ -30,12 +29,9 @@ export const TinyIntegrationStatus = () => {
               <CardHeader>
                 <CardTitle>Configurar Credenciais</CardTitle>
                 <CardDescription>
-                  Insira as credenciais do seu aplicativo Tiny ERP para começar a integração.
+                  Configure suas credenciais no arquivo .env para começar a integração.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <CredentialsForm />
-              </CardContent>
             </Card>
           ) : (
             <Card>
