@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Json } from "@/integrations/supabase/types";
 
 export interface Product {
@@ -45,23 +45,23 @@ export const useTinyProducts = () => {
         .from("integrations")
         .select("*")
         .eq("name", "tiny_erp")
-        .single();
+        .maybeSingle();
 
       if (integrationError) {
         console.error("❌ Erro ao buscar integração:", integrationError);
-        throw new Error("Integração Tiny ERP não encontrada");
+        throw new Error("Erro ao buscar integração com Tiny ERP");
       }
 
       if (!integration) {
         console.error("❌ Integração não encontrada");
-        throw new Error("Integração Tiny ERP não encontrada");
+        throw new Error("Integração com Tiny ERP não configurada");
       }
 
       console.log("✅ Integração encontrada:", integration);
 
       if (!integration.access_token) {
         console.error("❌ Token de acesso não encontrado");
-        throw new Error("Token de acesso não encontrado");
+        throw new Error("Token de acesso não encontrado. Por favor, reconecte sua conta.");
       }
 
       if (!isTinyErpSettings(integration.settings)) {

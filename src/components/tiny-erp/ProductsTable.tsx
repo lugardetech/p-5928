@@ -4,23 +4,12 @@ import { UnitFilter } from "./UnitFilter";
 import { ProductsTableContent } from "./ProductsTableContent";
 import { useTinyProducts } from "./hooks/useTinyProducts";
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 
 export const ProductsTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUnit, setSelectedUnit] = useState<string>("all");
-  const { toast } = useToast();
 
   const { data: products, isLoading, error } = useTinyProducts();
-
-  if (error) {
-    toast({
-      variant: "destructive",
-      title: "Erro ao carregar produtos",
-      description: error instanceof Error ? error.message : "Erro desconhecido",
-    });
-    return null;
-  }
 
   if (isLoading) {
     return (
@@ -31,10 +20,10 @@ export const ProductsTable = () => {
     );
   }
 
-  if (!products?.length) {
+  if (error || !products?.length) {
     return (
       <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-        Nenhum produto encontrado.
+        {error ? "Erro ao carregar produtos." : "Nenhum produto encontrado."}
       </div>
     );
   }
