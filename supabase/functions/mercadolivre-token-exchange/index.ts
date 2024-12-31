@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { IntegrationError, handleMercadoLivreError } from '../_shared/errors.ts';
+import { validateAndGetIntegration, getUserIntegration, exchangeToken, saveTokens } from '../_shared/mercadolivre.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -116,7 +117,6 @@ serve(async (req) => {
         refresh_token: tokens.refresh_token,
         token_expires_at: tokenExpiresAt.toISOString(),
         refresh_token_expires_at: refreshTokenExpiresAt?.toISOString(),
-        status: true,
       })
       .eq('user_id', userId)
       .eq('integration_id', integrationId);
