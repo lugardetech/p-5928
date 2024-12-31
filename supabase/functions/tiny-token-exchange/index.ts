@@ -5,7 +5,6 @@ import { corsHeaders } from '../_shared/cors.ts';
 interface TokenExchangeRequest {
   code: string;
   userId: string;
-  integrationId: string;
 }
 
 interface TokenResponse {
@@ -15,13 +14,13 @@ interface TokenResponse {
   refresh_expires_in: number;
 }
 
-async function getIntegrationSettings(supabaseAdmin: any, userId: string, integrationId: string) {
+async function getIntegrationSettings(supabaseAdmin: any, userId: string) {
   console.log("Buscando configurações da integração...");
   const { data: integration, error: fetchError } = await supabaseAdmin
     .from('integrations')
-    .select('settings')
+    .select('*')
     .eq('user_id', userId)
-    .eq('id', integrationId)
+    .eq('name', 'tiny_erp')
     .single();
 
   if (fetchError) {
@@ -33,7 +32,7 @@ async function getIntegrationSettings(supabaseAdmin: any, userId: string, integr
     throw new Error('Configurações da integração não encontradas');
   }
 
-  return integration.settings;
+  return integration;
 }
 
 async function exchangeToken(settings: any, code: string): Promise<TokenResponse> {
@@ -64,7 +63,7 @@ async function exchangeToken(settings: any, code: string): Promise<TokenResponse
   return await response.json();
 }
 
-async function updateIntegrationTokens(supabaseAdmin: any, userId: string, integrationId: string, tokens: TokenResponse) {
+async function updateIntegrationTokens(supabaseAdmin: any, userId: string, tokens: TokenResponse) {
   console.log("Atualizando tokens no banco...");
   const now = new Date();
   const tokenExpiresAt = new Date(now.getTime() + tokens.expires_in * 1000);
@@ -79,7 +78,7 @@ async function updateIntegrationTokens(supabaseAdmin: any, userId: string, integ
       refresh_token_expires_at: refreshTokenExpiresAt.toISOString(),
     })
     .eq('user_id', userId)
-    .eq('id', integrationId);
+    .eq('name', 'tiny_erp');
 
   if (updateError) {
     console.error("Erro ao salvar tokens:", updateError);
@@ -93,15 +92,15 @@ serve(async (req) => {
   }
 
   try {
-    const { code, userId, integrationId } = await req.json() as TokenExchangeRequest;
+    const { code, userId } = await req.json() as TokenExchangeRequest;
 
     // Validação dos parâmetros obrigatórios
-    if (!code || !userId || !integrationId) {
-      console.error("Parâmetros obrigatórios ausentes", { code, userId, integrationId });
+    if (!code || !userId) {
+      console.error("Parâmetros obrigatórios ausentes", { code, userId });
       return new Response(
         JSON.stringify({
           error: 'Parâmetros obrigatórios ausentes',
-          details: 'code, userId e integrationId são obrigatórios'
+          details: 'code e userId são obrigatórios'
         }),
         { 
           status: 400,
@@ -117,9 +116,9 @@ serve(async (req) => {
     );
 
     // Buscar configurações e trocar tokens
-    const settings = await getIntegrationSettings(supabaseAdmin, userId, integrationId);
-    const tokens = await exchangeToken(settings, code);
-    await updateIntegrationTokens(supabaseAdmin, userId, integrationId, tokens);
+    const integration = await getIntegrationSettings(supabaseAdmin, userId);
+    const tokens = await exchangeToken(integration.settings, code);
+    await updateIntegrationTokens(supabaseAdmin, userId, tokens);
 
     return new Response(
       JSON.stringify({ success: true }),
