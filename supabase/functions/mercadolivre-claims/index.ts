@@ -64,20 +64,15 @@ serve(async (req) => {
         .upsert({
           user_id: userId,
           claim_id: claim.id,
-          resource_id: claim.resource_id,
           status: claim.status,
           type: claim.type,
-          stage: claim.stage,
-          parent_id: claim.parent_id,
-          resource: claim.resource,
-          reason_id: claim.reason_id,
-          fulfilled: claim.fulfilled,
-          quantity_type: claim.quantity_type,
-          players: claim.players,
-          resolution: claim.resolution,
-          site_id: claim.site_id,
           date_created: claim.date_created,
-          last_updated: claim.last_updated
+          date_closed: claim.date_closed,
+          title: claim.title,
+          description: claim.description,
+          reason: claim.reason_id,
+          order_id: claim.resource_id,
+          buyer: claim.players.find(p => p.role === 'buyer')
         }, {
           onConflict: 'user_id,claim_id'
         });
