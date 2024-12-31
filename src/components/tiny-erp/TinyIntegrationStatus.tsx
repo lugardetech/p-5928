@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useIntegrationStatus } from "@/hooks/tiny-erp/useIntegrationStatus";
 import { CheckCircle, Settings, XCircle } from "lucide-react";
-import { TinyErpSettings } from "@/types/tiny-erp";
 import {
   Dialog,
   DialogContent,
@@ -13,12 +12,16 @@ import { CredentialsForm } from "./CredentialsForm";
 import { useState } from "react";
 
 export function TinyIntegrationStatus() {
-  const { hasCredentials, isConnected, handleAuth } = useIntegrationStatus();
+  const { hasCredentials, isConnected, handleAuth, status } = useIntegrationStatus();
   const [open, setOpen] = useState(false);
 
   const getAuthUrl = () => {
-    const settings = status?.settings as TinyErpSettings | undefined;
-    if (!settings?.client_id) {
+    if (!status?.settings || typeof status.settings !== 'object') {
+      return "#";
+    }
+
+    const settings = status.settings as { client_id: string; redirect_uri: string };
+    if (!settings.client_id) {
       return "#";
     }
 

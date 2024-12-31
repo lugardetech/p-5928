@@ -8,7 +8,6 @@ interface TinyErpSettings {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
-  [key: string]: string;
 }
 
 function isTinyErpSettings(settings: Json | null): settings is TinyErpSettings {
@@ -40,7 +39,7 @@ export const useIntegrationStatus = () => {
     getCurrentUser();
   }, []);
 
-  const { data: integration } = useQuery({
+  const { data: status } = useQuery({
     queryKey: ["tiny-integration", userId],
     queryFn: async () => {
       console.log("Fetching tiny_erp integration...");
@@ -49,7 +48,7 @@ export const useIntegrationStatus = () => {
         .select("*")
         .eq("name", "tiny_erp")
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching integration:", error);
@@ -63,31 +62,31 @@ export const useIntegrationStatus = () => {
 
   useEffect(() => {
     const checkIntegrationStatus = async () => {
-      if (!integration) {
+      if (!status) {
         console.log("No integration found");
         return;
       }
 
-      console.log("Checking integration status", integration);
+      console.log("Checking integration status", status);
 
-      if (isTinyErpSettings(integration.settings)) {
+      if (isTinyErpSettings(status.settings)) {
         setHasCredentials(true);
         
-        if (integration.access_token && integration.token_expires_at) {
-          const expiresAt = new Date(integration.token_expires_at);
+        if (status.access_token && status.token_expires_at) {
+          const expiresAt = new Date(status.token_expires_at);
           setIsConnected(expiresAt > new Date());
         } else {
           setIsConnected(false);
         }
       } else {
-        console.log("Invalid settings format:", integration.settings);
+        console.log("Invalid settings format:", status.settings);
         setHasCredentials(false);
         setIsConnected(false);
       }
     };
 
     checkIntegrationStatus();
-  }, [integration]);
+  }, [status]);
 
   const handleAuth = async () => {
     try {
@@ -101,14 +100,14 @@ export const useIntegrationStatus = () => {
         .select("*")
         .eq("user_id", userId)
         .eq("name", "tiny_erp")
-        .single();
+        .maybeSingle();
 
       if (fetchError) {
         console.error("Error fetching integration:", fetchError);
         throw fetchError;
       }
 
-      if (!isTinyErpSettings(userIntegration.settings)) {
+      if (!userIntegration || !isTinyErpSettings(userIntegration.settings)) {
         throw new Error("Credenciais inválidas ou incompletas");
       }
 
@@ -131,5 +130,5 @@ export const useIntegrationStatus = () => {
     }
   };
 
-  return { hasCredentials, isConnected, handleAuth };
+  return { hasCredentials, isConnected, handleAuth, status };
 };
