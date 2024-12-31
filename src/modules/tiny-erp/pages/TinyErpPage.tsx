@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/card";
 import { TinyIntegrationStatus } from "@/components/tiny-erp/TinyIntegrationStatus";
-import { CredentialsForm } from "@/components/tiny-erp/CredentialsForm";
 import { ProductSearch } from "@/components/tiny-erp/ProductSearch";
 import { useState } from "react";
 
@@ -17,10 +16,6 @@ export default function TinyErpPage() {
       <div className="grid gap-4">
         <Card className="p-6">
           <TinyIntegrationStatus />
-        </Card>
-
-        <Card className="p-6">
-          <CredentialsForm />
         </Card>
 
         <Card className="p-6">
