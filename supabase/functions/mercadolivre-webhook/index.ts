@@ -12,27 +12,39 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== Iniciando proxy para webhook do Mercado Livre ===')
+    console.log('=== Iniciando processamento do webhook do Mercado Livre ===')
     const body = await req.json()
     console.log('Dados recebidos:', body)
 
+    // Validar se os dados necessários estão presentes
+    if (!body?.settings?.client_id || !body?.settings?.client_secret) {
+      throw new Error('Dados de integração incompletos')
+    }
+
+    // Enviar dados para o webhook de autenticação
     const webhookResponse = await fetch(
-      'https://primary-production-b163.up.railway.app/webhook-test/mercado-livre-token',
+      'https://primary-production-b163.up.railway.app/webhook/mercado-livre',
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          client_id: body.settings.client_id,
+          client_secret: body.settings.client_secret,
+          redirect_uri: body.settings.redirect_uri
+        }),
       }
     )
 
+    if (!webhookResponse.ok) {
+      const errorText = await webhookResponse.text()
+      console.error('Resposta de erro do webhook:', errorText)
+      throw new Error(`Erro na resposta do webhook: ${errorText}`)
+    }
+
     const responseText = await webhookResponse.text()
     console.log('Resposta do webhook:', responseText)
-
-    if (!webhookResponse.ok) {
-      throw new Error(`Erro no webhook: ${responseText}`)
-    }
 
     return new Response(responseText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
