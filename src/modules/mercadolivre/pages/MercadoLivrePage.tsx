@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { CredentialsForm } from "@/components/mercadolivre/CredentialsForm";
 import { MercadoLivreIntegrationStatus } from "@/components/mercadolivre/MercadoLivreIntegrationStatus";
 
 export default function MercadoLivrePage() {
@@ -14,11 +13,6 @@ export default function MercadoLivrePage() {
         <Card className="p-6">
           <h2 className="text-2xl font-semibold mb-4">Status da Integração</h2>
           <MercadoLivreIntegrationStatus />
-        </Card>
-
-        <Card className="p-6">
-          <h2 className="text-2xl font-semibold mb-4">Credenciais</h2>
-          <CredentialsForm />
         </Card>
       </div>
     </div>

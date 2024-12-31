@@ -1,7 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { useIntegrationStatus } from "@/hooks/mercadolivre/useIntegrationStatus";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, Settings, XCircle } from "lucide-react";
 import { MercadoLivreSettings } from "@/types/mercadolivre";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { CredentialsForm } from "./CredentialsForm";
 
 export function MercadoLivreIntegrationStatus() {
   const { data: status, isLoading } = useIntegrationStatus();
@@ -36,6 +44,19 @@ export function MercadoLivreIntegrationStatus() {
             ) : (
               <XCircle className="h-5 w-5 text-red-500" />
             )}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Configurar Credenciais</DialogTitle>
+                </DialogHeader>
+                <CredentialsForm />
+              </DialogContent>
+            </Dialog>
           </div>
           {!status?.isConfigured && (
             <p className="text-sm text-muted-foreground">
