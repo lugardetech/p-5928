@@ -71,45 +71,63 @@ export type Database = {
       }
       mercadolivre_claims: {
         Row: {
-          buyer: Json | null
           claim_id: string
           created_at: string | null
-          date_closed: string | null
           date_created: string | null
-          description: string | null
+          fulfilled: boolean | null
           id: string
-          order_id: string | null
-          reason: string | null
+          last_updated: string | null
+          parent_id: string | null
+          players: Json | null
+          quantity_type: string | null
+          reason_id: string | null
+          resolution: Json | null
+          resource: string | null
+          resource_id: number | null
+          site_id: string | null
+          stage: string | null
           status: string | null
-          title: string | null
+          type: string | null
           user_id: string
         }
         Insert: {
-          buyer?: Json | null
           claim_id: string
           created_at?: string | null
-          date_closed?: string | null
           date_created?: string | null
-          description?: string | null
+          fulfilled?: boolean | null
           id?: string
-          order_id?: string | null
-          reason?: string | null
+          last_updated?: string | null
+          parent_id?: string | null
+          players?: Json | null
+          quantity_type?: string | null
+          reason_id?: string | null
+          resolution?: Json | null
+          resource?: string | null
+          resource_id?: number | null
+          site_id?: string | null
+          stage?: string | null
           status?: string | null
-          title?: string | null
+          type?: string | null
           user_id: string
         }
         Update: {
-          buyer?: Json | null
           claim_id?: string
           created_at?: string | null
-          date_closed?: string | null
           date_created?: string | null
-          description?: string | null
+          fulfilled?: boolean | null
           id?: string
-          order_id?: string | null
-          reason?: string | null
+          last_updated?: string | null
+          parent_id?: string | null
+          players?: Json | null
+          quantity_type?: string | null
+          reason_id?: string | null
+          resolution?: Json | null
+          resource?: string | null
+          resource_id?: number | null
+          site_id?: string | null
+          stage?: string | null
           status?: string | null
-          title?: string | null
+          type?: string | null
           user_id?: string
         }
         Relationships: []
