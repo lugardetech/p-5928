@@ -6,7 +6,6 @@ import {
   Package,
   ShoppingCart,
   ArrowLeftRight,
-  Users,
   Settings,
   Bell,
   BarChart3,
@@ -22,14 +21,15 @@ export function Sidebar() {
   const location = useLocation();
 
   return (
-    <div className="pb-12 min-h-screen border-r">
+    <div className="w-64 min-h-screen border-r">
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Painel</h2>
+          <h2 className="mb-2 px-4 text-sm font-semibold tracking-tight">Painel</h2>
           <div className="space-y-1">
             <Button
               variant={location.pathname === "/" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/">
@@ -40,6 +40,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/profile" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/profile">
@@ -50,6 +51,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/company" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/company">
@@ -60,6 +62,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/products" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/products">
@@ -70,6 +73,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/sales" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/sales">
@@ -80,6 +84,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/purchases" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/purchases">
@@ -90,6 +95,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/returns" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/returns">
@@ -100,6 +106,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/support" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/support">
@@ -111,11 +118,12 @@ export function Sidebar() {
         </div>
 
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Gestão</h2>
+          <h2 className="mb-2 px-4 text-sm font-semibold tracking-tight">Gestão</h2>
           <div className="space-y-1">
             <Button
               variant={location.pathname === "/settings" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/settings">
@@ -126,6 +134,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/notifications" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/notifications">
@@ -136,6 +145,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/analytics" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/analytics">
@@ -147,11 +157,12 @@ export function Sidebar() {
         </div>
 
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Integrações</h2>
+          <h2 className="mb-2 px-4 text-sm font-semibold tracking-tight">Integrações</h2>
           <div className="space-y-1">
             <Button
               variant={location.pathname === "/integration/tiny-erp" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/integration/tiny-erp">
@@ -162,6 +173,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/integration/tiny-erp/products" ? "secondary" : "ghost"}
               className="w-full pl-8 justify-start"
+              size="sm"
               asChild
             >
               <Link to="/integration/tiny-erp/products">
@@ -172,6 +184,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/integration/mercado-livre" ? "secondary" : "ghost"}
               className="w-full justify-start"
+              size="sm"
               asChild
             >
               <Link to="/integration/mercado-livre">
@@ -182,6 +195,7 @@ export function Sidebar() {
             <Button
               variant={location.pathname === "/integration/mercado-livre/claims" ? "secondary" : "ghost"}
               className="w-full pl-8 justify-start"
+              size="sm"
               asChild
             >
               <Link to="/integration/mercado-livre/claims">
