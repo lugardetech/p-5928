@@ -4,7 +4,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { CredentialsFormFields, credentialsSchema, type CredentialsForm as CredentialsFormType } from "./forms/CredentialsFormFields";
 
@@ -37,12 +36,18 @@ export const CredentialsForm = () => {
         throw new Error("Usuário não autenticado");
       }
 
+      console.log("Salvando credenciais para o usuário:", userId);
+
+      // Verificar se já existe uma integração
       const { data: existingIntegration, error: fetchError } = await supabase
         .from("integrations")
         .select("id")
         .eq("user_id", userId)
         .eq("name", "mercado_livre")
         .maybeSingle();
+
+      console.log("Integração existente:", existingIntegration);
+      console.log("Erro ao buscar:", fetchError);
 
       if (fetchError && fetchError.code !== "PGRST116") {
         throw fetchError;
@@ -51,6 +56,7 @@ export const CredentialsForm = () => {
       let error;
       
       if (existingIntegration) {
+        console.log("Atualizando integração existente:", existingIntegration.id);
         const { error: updateError } = await supabase
           .from("integrations")
           .update({
@@ -63,6 +69,7 @@ export const CredentialsForm = () => {
           .eq("id", existingIntegration.id);
         error = updateError;
       } else {
+        console.log("Criando nova integração");
         const { error: insertError } = await supabase
           .from("integrations")
           .insert({
@@ -78,7 +85,12 @@ export const CredentialsForm = () => {
         error = insertError;
       }
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erro ao salvar credenciais:", error);
+        throw error;
+      }
+
+      console.log("Credenciais salvas com sucesso!");
 
       toast({
         title: "Credenciais salvas com sucesso!",
