@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import { IntegrationError, handleMercadoLivreError } from '../_shared/errors.ts';
-import { validateAndGetIntegration, getUserIntegration, exchangeToken, saveTokens } from '../_shared/mercadolivre.ts';
+import { IntegrationError } from '../_shared/errors.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -41,11 +40,11 @@ serve(async (req) => {
     console.log("✅ Usuário encontrado:", user.id);
 
     // Buscar integração e credenciais
-    const { data: userIntegration, error: fetchError } = await supabaseAdmin
-      .from('user_integrations')
+    const { data: integration, error: fetchError } = await supabaseAdmin
+      .from('integrations')
       .select('settings')
       .eq('user_id', userId)
-      .eq('integration_id', integrationId)
+      .eq('id', integrationId)
       .single();
 
     if (fetchError) {
@@ -54,7 +53,7 @@ serve(async (req) => {
     }
     console.log("✅ Credenciais encontradas");
 
-    const settings = userIntegration.settings as { 
+    const settings = integration.settings as { 
       client_id: string
       client_secret: string
       redirect_uri: string
@@ -111,7 +110,7 @@ serve(async (req) => {
 
     console.log("💾 Salvando tokens no banco de dados...");
     const { error: updateError } = await supabaseAdmin
-      .from('user_integrations')
+      .from('integrations')
       .update({
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
@@ -119,7 +118,7 @@ serve(async (req) => {
         refresh_token_expires_at: refreshTokenExpiresAt?.toISOString(),
       })
       .eq('user_id', userId)
-      .eq('integration_id', integrationId);
+      .eq('id', integrationId);
 
     if (updateError) {
       console.error("❌ Erro ao salvar tokens:", updateError);
