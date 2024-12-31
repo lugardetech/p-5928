@@ -161,6 +161,16 @@ export function Sidebar() {
               </Link>
             </Button>
             <Button
+              variant={location.pathname === "/integration/tiny-erp/products" ? "secondary" : "ghost"}
+              className="w-full pl-8 justify-start"
+              asChild
+            >
+              <Link to="/integration/tiny-erp/products">
+                <Package className="mr-2 h-4 w-4" />
+                Produtos
+              </Link>
+            </Button>
+            <Button
               variant={location.pathname === "/integration/mercado-livre" ? "secondary" : "ghost"}
               className="w-full justify-start"
               asChild
