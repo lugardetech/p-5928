@@ -1,21 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-
-const credentialsSchema = z.object({
-  client_id: z.string().min(1, "Client ID é obrigatório"),
-  client_secret: z.string().min(1, "Client Secret é obrigatório"),
-  redirect_uri: z.string().url("URL de redirecionamento inválida").min(1, "URL de redirecionamento é obrigatória"),
-});
-
-type CredentialsForm = z.infer<typeof credentialsSchema>;
+import { CredentialsFormFields, credentialsSchema, type CredentialsForm } from "./forms/CredentialsFormFields";
 
 export const CredentialsForm = () => {
   const { toast } = useToast();
@@ -118,25 +109,18 @@ export const CredentialsForm = () => {
 
       if (error) throw error;
 
-      // Enviar dados para o webhook
-      try {
-        const webhookResponse = await fetch('https://primary-production-b163.up.railway.app/webhook-test/mercado-livre-token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(savedData),
-        });
-
-        const responseText = await webhookResponse.text();
-
-        if (!webhookResponse.ok) {
-          console.error('Erro ao enviar dados para webhook:', responseText);
-        } else {
-          console.log('Dados enviados com sucesso para webhook');
+      // Enviar dados para o webhook através da Edge Function
+      const { data: webhookResponse, error: webhookError } = await supabase.functions.invoke(
+        'mercadolivre-webhook',
+        {
+          body: savedData
         }
-      } catch (webhookError) {
+      );
+
+      if (webhookError) {
         console.error('Erro ao enviar dados para webhook:', webhookError);
+      } else {
+        console.log('Dados enviados com sucesso para webhook');
       }
 
       toast({
@@ -156,57 +140,7 @@ export const CredentialsForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="client_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Client ID</FormLabel>
-              <FormControl>
-                <Input placeholder="Insira seu Client ID" {...field} />
-              </FormControl>
-              <FormDescription>
-                O Client ID fornecido pelo Mercado Livre
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="client_secret"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Client Secret</FormLabel>
-              <FormControl>
-                <Input type="password" placeholder="Insira seu Client Secret" {...field} />
-              </FormControl>
-              <FormDescription>
-                O Client Secret fornecido pelo Mercado Livre
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="redirect_uri"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>URL de Redirecionamento</FormLabel>
-              <FormControl>
-                <Input placeholder="URL de redirecionamento" {...field} />
-              </FormControl>
-              <FormDescription>
-                URL para onde o Mercado Livre redirecionará após a autenticação
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
+        <CredentialsFormFields form={form} />
         <Button type="submit">Salvar Credenciais</Button>
       </form>
     </Form>
