@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CompanyFormData, CompanyData } from "../types";
@@ -38,16 +38,22 @@ export default function CompanyPage() {
         .eq("id", profile.user.id)
         .maybeSingle();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Erro ao carregar perfil:", profileError);
+        throw profileError;
+      }
 
       if (profileData?.company_id) {
         const { data: companyData, error: companyError } = await supabase
           .from("companies")
           .select("*")
           .eq("id", profileData.company_id)
-          .single();
+          .maybeSingle();
 
-        if (companyError) throw companyError;
+        if (companyError) {
+          console.error("Erro ao carregar empresa:", companyError);
+          throw companyError;
+        }
 
         if (companyData) {
           console.log("Company data loaded:", companyData);
@@ -80,7 +86,7 @@ export default function CompanyPage() {
         // Criar nova empresa
         const { data: newCompany, error: createError } = await supabase
           .from("companies")
-          .insert({ ...dbData, active: true })
+          .insert([dbData])
           .select()
           .single();
 
