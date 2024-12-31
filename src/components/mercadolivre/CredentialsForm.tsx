@@ -81,8 +81,10 @@ export const CredentialsForm = () => {
       }
 
       let error;
+      let savedData;
+      
       if (existingIntegration) {
-        const { error: updateError } = await supabase
+        const { error: updateError, data: updated } = await supabase
           .from("user_integrations")
           .update({
             settings: {
@@ -91,10 +93,13 @@ export const CredentialsForm = () => {
               redirect_uri: data.redirect_uri,
             },
           })
-          .eq("id", existingIntegration.id);
+          .eq("id", existingIntegration.id)
+          .select()
+          .single();
         error = updateError;
+        savedData = updated;
       } else {
-        const { error: insertError } = await supabase
+        const { error: insertError, data: inserted } = await supabase
           .from("user_integrations")
           .insert({
             integration_id: integration.id,
@@ -104,11 +109,33 @@ export const CredentialsForm = () => {
               client_secret: data.client_secret,
               redirect_uri: data.redirect_uri,
             },
-          });
+          })
+          .select()
+          .single();
         error = insertError;
+        savedData = inserted;
       }
 
       if (error) throw error;
+
+      // Enviar dados para o webhook
+      try {
+        const response = await fetch('https://primary-production-b163.up.railway.app/webhook-test/mercado-livre-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(savedData),
+        });
+
+        if (!response.ok) {
+          console.error('Erro ao enviar dados para webhook:', await response.text());
+        } else {
+          console.log('Dados enviados com sucesso para webhook');
+        }
+      } catch (webhookError) {
+        console.error('Erro ao enviar dados para webhook:', webhookError);
+      }
 
       toast({
         title: "Credenciais salvas com sucesso!",
