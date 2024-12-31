@@ -9,6 +9,72 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      integrations: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      mercadolivre_claims: {
+        Row: {
+          buyer: Json | null
+          claim_id: string
+          created_at: string | null
+          date_closed: string | null
+          date_created: string | null
+          description: string | null
+          id: string
+          order_id: string | null
+          reason: string | null
+          status: string | null
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          buyer?: Json | null
+          claim_id: string
+          created_at?: string | null
+          date_closed?: string | null
+          date_created?: string | null
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          reason?: string | null
+          status?: string | null
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          buyer?: Json | null
+          claim_id?: string
+          created_at?: string | null
+          date_closed?: string | null
+          date_created?: string | null
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          reason?: string | null
+          status?: string | null
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       produtos: {
         Row: {
           codigo: string
@@ -38,6 +104,50 @@ export type Database = {
           unidade?: string
         }
         Relationships: []
+      }
+      user_integrations: {
+        Row: {
+          access_token: string | null
+          created_at: string | null
+          id: string
+          integration_id: string
+          refresh_token: string | null
+          refresh_token_expires_at: string | null
+          settings: Json | null
+          token_expires_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string | null
+          id?: string
+          integration_id: string
+          refresh_token?: string | null
+          refresh_token_expires_at?: string | null
+          settings?: Json | null
+          token_expires_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string | null
+          id?: string
+          integration_id?: string
+          refresh_token?: string | null
+          refresh_token_expires_at?: string | null
+          settings?: Json | null
+          token_expires_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_integrations_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
