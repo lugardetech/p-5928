@@ -36,7 +36,7 @@ export default function CompanyPage() {
           if (companyError) throw companyError;
 
           if (companyData) {
-            const formData = adaptDatabaseToFormData(companyData);
+            const formData = adaptDatabaseToFormData(companyData as CompanyData);
             setCompany(formData);
           }
         }
@@ -63,29 +63,30 @@ export default function CompanyPage() {
       if (!profile.user) return;
 
       const dbData = adaptFormDataToDatabase(data);
-      let companyId = company?.id;
 
-      if (!companyId) {
+      if (!company?.id) {
+        // Criar nova empresa
         const { data: newCompany, error: createError } = await supabase
           .from("companies")
-          .insert([dbData])
+          .insert([{ ...dbData, active: true }])
           .select()
           .single();
 
         if (createError) throw createError;
-        companyId = newCompany.id;
 
+        // Atualizar perfil do usuário com o ID da empresa
         const { error: updateProfileError } = await supabase
           .from("profiles")
-          .update({ company_id: companyId })
+          .update({ company_id: newCompany.id })
           .eq("id", profile.user.id);
 
         if (updateProfileError) throw updateProfileError;
       } else {
+        // Atualizar empresa existente
         const { error: updateError } = await supabase
           .from("companies")
           .update(dbData)
-          .eq("id", companyId);
+          .eq("id", company.id);
 
         if (updateError) throw updateError;
       }
