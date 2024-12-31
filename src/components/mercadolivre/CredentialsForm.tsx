@@ -72,6 +72,7 @@ export const CredentialsForm = () => {
           .insert({
             name: "mercado_livre",
             user_id: userId,
+            description: "Integração com o Mercado Livre para gerenciamento de vendas e reclamações",
             settings: {
               client_id: data.client_id,
               client_secret: data.client_secret,
