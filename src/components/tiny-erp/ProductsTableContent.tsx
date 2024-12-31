@@ -19,21 +19,24 @@ export const ProductsTableContent = ({ products }: ProductsTableContentProps) =>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Código</TableHead>
-            <TableHead>Nome</TableHead>
-            <TableHead>Preço</TableHead>
-            <TableHead>Unidade</TableHead>
-            <TableHead>Estoque</TableHead>
+            <TableHead className="font-medium text-muted-foreground">Código</TableHead>
+            <TableHead className="font-medium text-muted-foreground">Nome</TableHead>
+            <TableHead className="font-medium text-muted-foreground">Preço</TableHead>
+            <TableHead className="font-medium text-muted-foreground">Unidade</TableHead>
+            <TableHead className="font-medium text-muted-foreground">Estoque</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {products.map((product) => (
-            <TableRow key={product.id}>
-              <TableCell>{product.codigo}</TableCell>
-              <TableCell>{product.nome}</TableCell>
-              <TableCell>R$ {product.preco}</TableCell>
-              <TableCell>{product.unidade}</TableCell>
-              <TableCell>{product.estoque}</TableCell>
+            <TableRow 
+              key={product.id}
+              className="h-12 hover:bg-muted/50"
+            >
+              <TableCell className="text-sm">{product.codigo}</TableCell>
+              <TableCell className="text-sm">{product.nome}</TableCell>
+              <TableCell className="text-sm">R$ {product.preco}</TableCell>
+              <TableCell className="text-sm">{product.unidade}</TableCell>
+              <TableCell className="text-sm">{product.estoque}</TableCell>
             </TableRow>
           ))}
         </TableBody>

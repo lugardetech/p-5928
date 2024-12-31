@@ -19,6 +19,62 @@ Este é um sistema de gestão empresarial desenvolvido com tecnologias modernas 
   - PostgreSQL como banco de dados
   - Edge Functions para lógica serverless
 
+## Diretrizes de Layout
+
+### Estrutura de Páginas
+- Cabeçalho com título (text-2xl font-bold text-primary)
+- Subtítulo descritivo (text-sm text-muted-foreground)
+- Card principal com padding consistente (p-6)
+- Espaçamento vertical entre seções (space-y-8)
+
+### Tabelas
+1. **Container**
+   - Usar Card do Shadcn como wrapper
+   - Padding: p-6
+   - Borda arredondada: rounded-lg
+   - Sombra suave: shadow-sm
+
+2. **Barra de Ações**
+   - Layout flexbox com justify-between
+   - Filtros à esquerda
+   - Botões de ação à direita
+   - Espaçamento: gap-4
+   - Margem inferior: mb-4
+
+3. **Componentes de Filtro**
+   - Input de busca: max-w-sm
+   - Selects: w-[180px]
+   - DatePickers: w-[180px]
+   - Gap entre filtros: gap-2
+
+4. **DataTable**
+   - Cabeçalhos: font-medium text-muted-foreground
+   - Células: text-sm
+   - Altura das linhas: h-12
+   - Hover: hover:bg-muted/50
+
+5. **Paginação**
+   - Margem superior: mt-4
+   - Botões: size="sm"
+   - Texto: text-sm text-muted-foreground
+
+### Estados
+- Loading: Usar Skeleton
+- Estado vazio: Mensagem centralizada
+- Erros: Toast com variant="destructive"
+
+### Organização de Código
+```
+src/
+  components/
+    tables/
+      [entidade]/
+        index.tsx        # Componente principal
+        columns.tsx      # Definição das colunas
+        types.ts         # Tipos e interfaces
+        components/      # Componentes específicos
+```
+
 ## Funcionalidades Principais
 
 - Gestão de Produtos
@@ -35,27 +91,6 @@ Este é um sistema de gestão empresarial desenvolvido com tecnologias modernas 
 - Integrações
   - Tiny ERP
   - Outros sistemas via API
-
-## Estrutura do Projeto
-
-```
-src/
-├── components/          # Componentes globais reutilizáveis
-│   └── ui/             # Componentes UI base (shadcn)
-├── modules/            # Módulos da aplicação
-│   ├── products/       # Módulo de produtos
-│   │   ├── components/ # Componentes específicos de produtos
-│   │   │   ├── form/  # Componentes de formulário
-│   │   │   └── products-table/ # Componentes da tabela
-│   │   └── pages/     # Páginas do módulo
-│   ├── sales/         # Módulo de vendas
-│   ├── purchases/     # Módulo de compras
-│   ├── returns/       # Módulo de devoluções
-│   ├── support/       # Módulo de suporte
-│   └── integrations/  # Módulo de integrações
-├── lib/               # Utilitários e configurações
-└── integrations/      # Integrações com serviços externos
-```
 
 ## Como Executar o Projeto
 

@@ -3,27 +3,40 @@ import { ProductSearch } from "./ProductSearch";
 import { UnitFilter } from "./UnitFilter";
 import { ProductsTableContent } from "./ProductsTableContent";
 import { useTinyProducts } from "./hooks/useTinyProducts";
+import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 export const ProductsTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUnit, setSelectedUnit] = useState<string>("all");
+  const { toast } = useToast();
 
   const { data: products, isLoading, error } = useTinyProducts();
 
   if (error) {
+    toast({
+      variant: "destructive",
+      title: "Erro ao carregar produtos",
+      description: error instanceof Error ? error.message : "Erro desconhecido",
+    });
+    return null;
+  }
+
+  if (isLoading) {
     return (
-      <div className="p-4 text-red-500">
-        {error instanceof Error ? error.message : "Erro ao carregar produtos"}
+      <div className="space-y-4">
+        <div className="h-10 w-full animate-pulse bg-muted rounded" />
+        <div className="h-[400px] w-full animate-pulse bg-muted rounded" />
       </div>
     );
   }
 
-  if (isLoading) {
-    return <div className="p-4">Carregando produtos...</div>;
-  }
-
   if (!products?.length) {
-    return <div className="p-4">Nenhum produto encontrado.</div>;
+    return (
+      <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+        Nenhum produto encontrado.
+      </div>
+    );
   }
 
   // Obter lista única de unidades para o select
@@ -44,7 +57,7 @@ export const ProductsTable = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-4">
+      <div className="flex items-center justify-between mb-4">
         <ProductSearch value={searchTerm} onChange={setSearchTerm} />
         <UnitFilter 
           units={uniqueUnits} 
