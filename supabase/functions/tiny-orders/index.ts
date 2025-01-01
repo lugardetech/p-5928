@@ -80,7 +80,8 @@ Deno.serve(async (req) => {
         nome: pedido.cliente?.nome || '-',
         codigo: pedido.cliente?.codigo || '-',
         cpf_cnpj: pedido.cliente?.cpfCnpj || '-',
-        email: pedido.cliente?.email || '-'
+        email: pedido.cliente?.email || '-',
+        telefone: pedido.cliente?.telefone || '-'
       },
       valor: pedido.valor,
       situacao: pedido.situacao,
@@ -111,10 +112,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("❌ Erro na Edge Function:", error);
     return new Response(
-      JSON.stringify({ 
-        status: 'Erro',
-        error: error.message 
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         headers: { 
           ...corsHeaders, 

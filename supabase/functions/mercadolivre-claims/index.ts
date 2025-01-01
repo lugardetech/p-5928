@@ -26,6 +26,11 @@ async function fetchAllClaims(accessToken: string) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("❌ Erro na API do Mercado Livre:", errorText);
+      
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Token de acesso expirado ou inválido. Por favor, reconecte sua conta do Mercado Livre.');
+      }
+      
       throw new Error(`Erro na API do Mercado Livre: ${response.statusText}`);
     }
 

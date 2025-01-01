@@ -1,8 +1,4 @@
 import { corsHeaders } from '../_shared/cors.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -25,11 +21,11 @@ Deno.serve(async (req) => {
 
     // Fazer requisição para a API do Tiny
     console.log("🔄 Fazendo requisição para API do Tiny...")
-    const response = await fetch('https://api.tiny.com.br/public-api/v3/produtos', {
+    const response = await fetch('https://api.tiny.com.br/api/v3/produtos', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${access_token}`,
-        'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
     })
 
@@ -37,6 +33,11 @@ Deno.serve(async (req) => {
       console.error(`❌ Erro na API do Tiny: ${response.status} - ${response.statusText}`)
       const errorText = await response.text()
       console.error("Resposta da API:", errorText)
+      
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Token de acesso expirado ou inválido. Por favor, reconecte sua conta do Tiny ERP.');
+      }
+      
       throw new Error(`Erro na API do Tiny: ${response.statusText}`)
     }
 
