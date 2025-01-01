@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { CredentialsForm } from "./CredentialsForm";
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export function TinyIntegrationStatus() {
   const { hasCredentials, isConnected, handleAuth, status } = useIntegrationStatus();
@@ -31,53 +31,48 @@ export function TinyIntegrationStatus() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Credenciais configuradas:</span>
-            {hasCredentials ? (
-              <CheckCircle className="h-5 w-5 text-green-500" />
-            ) : (
-              <XCircle className="h-5 w-5 text-red-500" />
-            )}
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Configurar Credenciais</DialogTitle>
-                </DialogHeader>
-                <CredentialsForm onSuccess={() => setOpen(false)} />
-              </DialogContent>
-            </Dialog>
-          </div>
-          {!hasCredentials && (
-            <p className="text-sm text-muted-foreground">
-              Configure suas credenciais do Tiny ERP para começar.
-            </p>
-          )}
-        </div>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">Tiny ERP</h3>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Settings className="h-4 w-4" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Configurações do Tiny ERP</DialogTitle>
+            </DialogHeader>
+            <CredentialsForm onSuccess={() => setOpen(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Conta autenticada:</span>
-            {isConnected ? (
-              <CheckCircle className="h-5 w-5 text-green-500" />
-            ) : (
-              <XCircle className="h-5 w-5 text-red-500" />
-            )}
-          </div>
-          {!isConnected && hasCredentials && (
-            <p className="text-sm text-muted-foreground">
-              Clique no botão ao lado para autenticar sua conta do Tiny ERP.
-            </p>
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          {hasCredentials ? (
+            <CheckCircle className="h-5 w-5 text-green-500" />
+          ) : (
+            <XCircle className="h-5 w-5 text-red-500" />
           )}
+          <p className="text-sm">
+            {hasCredentials
+              ? "Credenciais configuradas"
+              : "Credenciais não configuradas"}
+          </p>
         </div>
+
+        <div className="flex items-center gap-2">
+          {isConnected ? (
+            <CheckCircle className="h-5 w-5 text-green-500" />
+          ) : (
+            <XCircle className="h-5 w-5 text-red-500" />
+          )}
+          <p className="text-sm">
+            {isConnected ? "Autenticado" : "Não autenticado"}
+          </p>
+        </div>
+
         <div className="flex gap-2">
           {hasCredentials && !isConnected && (
             <Button onClick={handleAuth}>Autenticar</Button>
