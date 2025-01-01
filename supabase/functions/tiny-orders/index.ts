@@ -2,7 +2,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -20,7 +19,6 @@ serve(async (req) => {
     console.log("🔄 Buscando pedidos no Tiny ERP...");
     console.log("Token de acesso (primeiros 10 caracteres):", access_token.substring(0, 10) + "...");
 
-    // URL da API V3 do Tiny
     const response = await fetch('https://api.tiny.com.br/api/v3/pedidos', {
       method: 'GET',
       headers: {
@@ -57,15 +55,28 @@ serve(async (req) => {
     }
 
     const pedidos = data.itens.map((pedido: any) => ({
-      id: pedido.id,
-      numero: pedido.numero,
-      data_pedido: pedido.data_pedido,
+      id: pedido.id.toString(),
+      numero: pedido.numeroPedido.toString(),
+      data_pedido: pedido.dataCriacao,
       cliente: {
         nome: pedido.cliente?.nome || '-',
-        codigo: pedido.cliente?.codigo || '-'
+        codigo: pedido.cliente?.codigo || '-',
+        cpf_cnpj: pedido.cliente?.cpfCnpj || '-',
+        email: pedido.cliente?.email || '-',
+        telefone: pedido.cliente?.telefone || '-'
       },
-      situacao: pedido.situacao || '-',
-      valor_total: pedido.valor_total || "0.00"
+      situacao: pedido.situacao.toString(),
+      valor_total: pedido.valor || "0.00",
+      vendedor: pedido.vendedor ? {
+        id: pedido.vendedor.id,
+        nome: pedido.vendedor.nome
+      } : null,
+      transportador: pedido.transportador ? {
+        nome: pedido.transportador.nome,
+        rastreamento: pedido.transportador.codigoRastreamento,
+        url_rastreamento: pedido.transportador.urlRastreamento
+      } : null,
+      data_prevista: pedido.dataPrevista || null
     }));
 
     console.log("✅ Pedidos processados com sucesso");
@@ -74,7 +85,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         status: "OK",
-        pedidos
+        pedidos,
+        paginacao: data.paginacao
       }),
       { 
         headers: { 
