@@ -36,8 +36,8 @@ export default function LoginPage() {
         });
       }
       // Tratamento de erros através dos eventos de autenticação
-      if (event === "USER_DELETED" || event === "TOKEN_REFRESHED") {
-        console.error("Auth event error:", event);
+      if (event === "PASSWORD_RECOVERY" || event === "TOKEN_REFRESHED") {
+        console.error("Auth event:", event);
         toast({
           variant: "destructive",
           title: "Erro ao realizar login",
