@@ -8,25 +8,26 @@ Deno.serve(async (req) => {
   try {
     console.log("=== Iniciando busca de produtos ===")
     
-    const { access_token, user_id } = await req.json()
+    const { user_id } = await req.json()
     
-    if (!access_token) {
-      console.error("❌ Token de acesso não fornecido")
-      throw new Error('Token de acesso não fornecido')
-    }
-
     if (!user_id) {
       console.error("❌ ID do usuário não fornecido")
       throw new Error('ID do usuário não fornecido')
     }
 
-    console.log("✅ Token de acesso e user_id recebidos")
+    // Buscar access token das secrets
+    const accessToken = Deno.env.get(`TINY_ACCESS_TOKEN_${user_id}`);
+    if (!accessToken) {
+      throw new Error('Token de acesso não encontrado');
+    }
+
+    console.log("✅ Token de acesso encontrado")
     console.log("🔄 Fazendo requisição para API do Tiny...")
 
     const response = await fetch('https://api.tiny.com.br/api/v3/produtos', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${access_token}`,
+        'Authorization': `Bearer ${accessToken}`,
         'Accept': 'application/json',
       },
     });
@@ -37,7 +38,52 @@ Deno.serve(async (req) => {
       console.error("Resposta da API:", errorText)
       
       if (response.status === 401 || response.status === 403) {
-        throw new Error("Token de acesso inválido ou expirado")
+        // Tentar renovar o token
+        const refreshResponse = await fetch(
+          `${Deno.env.get('SUPABASE_URL')}/functions/v1/tiny-token-refresh`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            },
+            body: JSON.stringify({ user_id })
+          }
+        );
+
+        if (!refreshResponse.ok) {
+          throw new Error("Erro ao renovar token. Por favor, reconecte sua conta do Tiny ERP.")
+        }
+
+        // Tentar novamente com o novo token
+        const newToken = Deno.env.get(`TINY_ACCESS_TOKEN_${user_id}`);
+        if (!newToken) {
+          throw new Error('Novo token não encontrado após renovação');
+        }
+
+        const retryResponse = await fetch('https://api.tiny.com.br/api/v3/produtos', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${newToken}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (!retryResponse.ok) {
+          throw new Error(`Erro na API do Tiny: ${retryResponse.statusText}`)
+        }
+
+        const retryData = await retryResponse.json()
+        return new Response(
+          JSON.stringify({ produtos: retryData.itens }),
+          { 
+            headers: { 
+              ...corsHeaders, 
+              'Content-Type': 'application/json'
+            },
+            status: 200,
+          },
+        )
       }
       
       throw new Error(`Erro na API do Tiny: ${response.statusText}`)
