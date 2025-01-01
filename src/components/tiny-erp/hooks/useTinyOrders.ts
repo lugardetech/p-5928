@@ -79,6 +79,11 @@ export const useTinyOrders = () => {
     queryFn: async () => {
       console.log("=== Iniciando busca de pedidos ===");
       
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Usuário não autenticado");
+      }
+
       // Buscar integração
       const { data: integration, error: integrationError } = await supabase
         .from("integrations")
@@ -103,57 +108,17 @@ export const useTinyOrders = () => {
         throw new Error("Token de acesso não encontrado. Por favor, reconecte sua conta.");
       }
 
-      if (!isTinyErpSettings(integration.settings)) {
-        console.error("❌ Configurações inválidas:", integration.settings);
-        throw new Error("Configurações da integração inválidas");
-      }
-
-      // Verificar se o token expirou
-      let accessToken = integration.access_token;
-      if (integration.token_expires_at) {
-        const expiresAt = new Date(integration.token_expires_at);
-        if (expiresAt < new Date()) {
-          console.log("🔄 Token expirado, tentando renovar...");
-          
-          try {
-            const { data: refreshData, error: refreshError } = await supabase.functions.invoke('tiny-token-refresh', {
-              body: { 
-                refresh_token: integration.refresh_token,
-                client_id: integration.settings.client_id,
-                client_secret: integration.settings.client_secret
-              }
-            });
-
-            if (refreshError) throw refreshError;
-
-            // Atualizar tokens no banco
-            const { error: updateError } = await supabase
-              .from('integrations')
-              .update({
-                access_token: refreshData.access_token,
-                refresh_token: refreshData.refresh_token,
-                token_expires_at: refreshData.token_expires_at,
-                refresh_token_expires_at: refreshData.refresh_token_expires_at
-              })
-              .eq('id', integration.id);
-
-            if (updateError) throw updateError;
-
-            console.log("✅ Token renovado com sucesso");
-            accessToken = refreshData.access_token;
-          } catch (error) {
-            console.error("❌ Erro ao renovar token:", error);
-            throw new Error("Erro ao renovar token de acesso. Por favor, reconecte sua conta.");
-          }
-        }
-      }
-
       console.log("✅ Token de acesso válido encontrado");
 
       // Sincronizar com a API do Tiny
       console.log("🔄 Sincronizando pedidos com Tiny API...");
       const { data: syncData, error: syncError } = await supabase.functions.invoke('tiny-orders', {
-        body: { access_token: accessToken }
+        body: { 
+          access_token: integration.access_token 
+        },
+        headers: {
+          'x-user-id': user.id
+        }
       });
 
       if (syncError) {
