@@ -46,14 +46,18 @@ export const useTinyOrders = () => {
       // Buscar usuário atual
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        console.error("❌ Usuário não autenticado");
         throw new Error("Usuário não autenticado");
       }
+
+      console.log("✅ Usuário autenticado:", user.id);
 
       // Buscar integração
       const { data: integration, error: integrationError } = await supabase
         .from("integrations")
         .select("*")
         .eq("name", "tiny_erp")
+        .eq("user_id", user.id)
         .maybeSingle();
 
       if (integrationError) {

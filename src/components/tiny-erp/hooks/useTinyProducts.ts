@@ -40,11 +40,21 @@ export const useTinyProducts = () => {
     queryFn: async () => {
       console.log("=== Iniciando busca de produtos ===");
       
+      // Buscar usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error("❌ Usuário não autenticado");
+        throw new Error("Usuário não autenticado");
+      }
+
+      console.log("✅ Usuário autenticado:", user.id);
+
       // Buscar integração
       const { data: integration, error: integrationError } = await supabase
         .from("integrations")
         .select("*")
         .eq("name", "tiny_erp")
+        .eq("user_id", user.id)
         .maybeSingle();
 
       if (integrationError) {
@@ -81,7 +91,8 @@ export const useTinyProducts = () => {
               body: { 
                 refresh_token: integration.refresh_token,
                 client_id: integration.settings.client_id,
-                client_secret: integration.settings.client_secret
+                client_secret: integration.settings.client_secret,
+                user_id: user.id
               }
             });
 
@@ -114,7 +125,10 @@ export const useTinyProducts = () => {
       // Chamar Edge Function
       console.log("🔄 Chamando Edge Function tiny-products...");
       const { data, error: functionError } = await supabase.functions.invoke('tiny-products', {
-        body: { access_token: accessToken }
+        body: { 
+          access_token: accessToken,
+          user_id: user.id
+        }
       });
 
       if (functionError) {
