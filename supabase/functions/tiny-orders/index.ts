@@ -38,7 +38,6 @@ Deno.serve(async (req) => {
     const data = await response.json();
     console.log("✅ Dados recebidos da API do Tiny:", data);
 
-    // Validar a resposta
     if (!data?.itens) {
       console.error("❌ Resposta inválida da API do Tiny:", data);
       throw new Error('Resposta inválida da API do Tiny');
@@ -55,19 +54,19 @@ Deno.serve(async (req) => {
       console.log("Processando pedido:", order);
       
       // Validar dados obrigatórios
-      if (!order.id || !order.numero) {
+      if (!order.id || !order.numeroPedido) {
         console.error("❌ Dados obrigatórios faltando no pedido:", order);
-        continue; // Pula para o próximo pedido
+        continue;
       }
 
       const orderData = {
         user_id: req.headers.get('x-user-id'),
         tiny_id: parseInt(order.id),
-        numero_pedido: parseInt(order.numero) || 0, // Garante um valor numérico
+        numero_pedido: parseInt(order.numeroPedido),
         situacao: parseInt(order.situacao) || 0,
-        data_criacao: order.data_pedido || null,
-        data_prevista: order.data_prevista || null,
-        valor: parseFloat(order.valor_total || '0'),
+        data_criacao: order.dataCriacao ? new Date(order.dataCriacao) : null,
+        data_prevista: order.dataPrevista ? new Date(order.dataPrevista) : null,
+        valor: parseFloat(order.valor || '0'),
         cliente: order.cliente || null,
         vendedor: order.vendedor || null,
         transportador: order.transportador || null,
