@@ -40,7 +40,11 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         token: access_token,
-        formato: "json"
+        formato: "json",
+        pesquisa: {
+          situacao: "todos",
+          formato_data_criacao: "yyyy-MM-dd"
+        }
       }),
     });
 
@@ -50,6 +54,10 @@ serve(async (req) => {
 
     const data = await tinyResponse.json();
     console.log("✅ Pedidos recebidos:", data);
+
+    if (data.retorno.status === "Erro") {
+      throw new Error(`Erro da API Tiny: ${data.retorno.registros}`);
+    }
 
     // Criar cliente Supabase
     const supabaseClient = createClient(
@@ -76,20 +84,21 @@ serve(async (req) => {
     // Salvar cada pedido no banco
     const orders = data.retorno.pedidos || [];
     for (const order of orders) {
+      const pedido = order.pedido;
       const { error: upsertError } = await supabaseClient
         .from('tiny_orders')
         .upsert({
           user_id: user.id,
-          tiny_id: order.pedido.id,
-          numero_pedido: order.pedido.numeroPedido,
-          situacao: order.pedido.situacao,
-          data_criacao: order.pedido.dataCriacao,
-          data_prevista: order.pedido.dataPrevista,
-          valor: parseFloat(order.pedido.valor),
-          cliente: order.pedido.cliente,
-          vendedor: order.pedido.vendedor,
-          transportador: order.pedido.transportador,
-          ecommerce: order.pedido.ecommerce
+          tiny_id: pedido.id,
+          numero_pedido: pedido.numeroPedido,
+          situacao: pedido.situacao,
+          data_criacao: pedido.dataCriacao,
+          data_prevista: pedido.dataPrevista,
+          valor: parseFloat(pedido.valor),
+          cliente: pedido.cliente,
+          vendedor: pedido.vendedor,
+          transportador: pedido.transportador,
+          ecommerce: pedido.ecommerce
         }, {
           onConflict: 'user_id,tiny_id'
         });
