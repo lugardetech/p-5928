@@ -43,6 +43,12 @@ export const useTinyOrders = () => {
     queryFn: async () => {
       console.log("=== Iniciando busca de pedidos ===");
       
+      // Buscar usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Usuário não autenticado");
+      }
+
       // Buscar integração
       const { data: integration, error: integrationError } = await supabase
         .from("integrations")
@@ -72,57 +78,31 @@ export const useTinyOrders = () => {
         throw new Error("Configurações da integração inválidas");
       }
 
-      // Verificar se o token expirou
-      let accessToken = integration.access_token;
-      if (integration.token_expires_at) {
-        const expiresAt = new Date(integration.token_expires_at);
-        if (expiresAt < new Date()) {
-          console.log("🔄 Token expirado, tentando renovar...");
-          
-          try {
-            const { data: refreshData, error: refreshError } = await supabase.functions.invoke('tiny-token-refresh', {
-              body: { 
-                refresh_token: integration.refresh_token,
-                client_id: integration.settings.client_id,
-                client_secret: integration.settings.client_secret
-              }
-            });
-
-            if (refreshError) throw refreshError;
-
-            // Atualizar tokens no banco
-            const { error: updateError } = await supabase
-              .from('integrations')
-              .update({
-                access_token: refreshData.access_token,
-                refresh_token: refreshData.refresh_token,
-                token_expires_at: refreshData.token_expires_at,
-                refresh_token_expires_at: refreshData.refresh_token_expires_at
-              })
-              .eq('id', integration.id);
-
-            if (updateError) throw updateError;
-
-            console.log("✅ Token renovado com sucesso");
-            accessToken = refreshData.access_token;
-          } catch (error) {
-            console.error("❌ Erro ao renovar token:", error);
-            throw new Error("Erro ao renovar token de acesso. Por favor, reconecte sua conta.");
-          }
-        }
-      }
-
-      console.log("✅ Token de acesso válido encontrado");
-
       // Chamar Edge Function
       console.log("🔄 Chamando Edge Function tiny-orders...");
       const { data, error: functionError } = await supabase.functions.invoke('tiny-orders', {
-        body: { access_token: accessToken }
+        body: { 
+          access_token: integration.access_token,
+          user_id: user.id
+        }
       });
 
       if (functionError) {
         console.error("❌ Erro na Edge Function:", functionError);
         throw new Error(functionError.message);
+      }
+
+      // Se recebeu um novo token, atualizar no banco
+      if (data.access_token && data.access_token !== integration.access_token) {
+        console.log("🔄 Atualizando token no banco de dados...");
+        const { error: updateError } = await supabase
+          .from('integrations')
+          .update({ access_token: data.access_token })
+          .eq('id', integration.id);
+
+        if (updateError) {
+          console.error("❌ Erro ao atualizar token:", updateError);
+        }
       }
 
       console.log("✅ Pedidos recebidos:", data);
@@ -131,17 +111,7 @@ export const useTinyOrders = () => {
         throw new Error("Nenhum pedido encontrado");
       }
 
-      return data.pedidos.map((pedido: any) => ({
-        id: pedido.id,
-        numero: pedido.numero,
-        data_pedido: pedido.data_pedido,
-        cliente: {
-          nome: pedido.cliente?.nome || '-',
-          codigo: pedido.cliente?.codigo || '-'
-        },
-        situacao: pedido.situacao || '-',
-        valor_total: pedido.valor_total?.toFixed(2) || "0.00"
-      }));
+      return data.pedidos;
     },
     retry: false,
     meta: {

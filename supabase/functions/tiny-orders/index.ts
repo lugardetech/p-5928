@@ -1,76 +1,79 @@
 import { corsHeaders } from '../_shared/cors.ts'
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
     console.log("=== Iniciando busca de pedidos ===")
     
-    // Obter o token do corpo da requisição
-    const { access_token } = await req.json()
+    const { access_token, user_id } = await req.json()
     
     if (!access_token) {
       console.error("❌ Token de acesso não fornecido")
       throw new Error('Token de acesso não fornecido')
     }
 
+    if (!user_id) {
+      console.error("❌ ID do usuário não fornecido")
+      throw new Error('ID do usuário não fornecido')
+    }
+
     console.log("✅ Token de acesso recebido")
     console.log("🔄 Buscando pedidos no Tiny ERP...")
-    console.log("Token de acesso (primeiros 10 caracteres):", access_token.substring(0, 10) + "...")
 
-    // Construir URL com parâmetros de paginação
-    const url = new URL('https://api.tiny.com.br/api/v3/pedidos');
-    url.searchParams.append('limit', '50');
-    url.searchParams.append('offset', '0');
-
-    console.log("URL da requisição:", url.toString());
-
-    const response = await fetch(url, {
+    let currentToken = access_token;
+    let response = await fetch('https://api.tiny.com.br/api/v3/pedidos', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${access_token}`,
+        'Authorization': `Bearer ${currentToken}`,
         'Accept': 'application/json'
       }
     });
 
-    console.log("Status da resposta:", response.status);
-    console.log("Headers da resposta:", Object.fromEntries(response.headers.entries()));
+    // Se o token estiver expirado, tenta renovar
+    if (response.status === 401 || response.status === 403) {
+      console.log("🔄 Token expirado, tentando renovar...")
+      
+      const refreshResponse = await fetch(`${req.url.replace('/tiny-orders', '/tiny-token-refresh')}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        },
+        body: JSON.stringify({ user_id })
+      });
+
+      if (!refreshResponse.ok) {
+        throw new Error('Erro ao renovar token. Por favor, reconecte sua conta do Tiny ERP.');
+      }
+
+      const refreshData = await refreshResponse.json();
+      currentToken = refreshData.access_token;
+
+      // Tenta novamente com o novo token
+      console.log("🔄 Tentando novamente com o novo token...")
+      response = await fetch('https://api.tiny.com.br/api/v3/pedidos', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${currentToken}`,
+          'Accept': 'application/json'
+        }
+      });
+    }
 
     if (!response.ok) {
-      console.error("❌ Erro na resposta da API:", response.status, response.statusText);
-      const errorText = await response.text();
-      console.error("Corpo da resposta de erro:", errorText);
-      
-      if (response.status === 401 || response.status === 403) {
-        throw new Error('Token de acesso expirado ou inválido. Por favor, reconecte sua conta do Tiny ERP.');
-      }
-      
-      throw new Error(`Erro na API do Tiny: ${response.status} ${response.statusText}\n${errorText}`);
+      console.error(`❌ Erro na API do Tiny: ${response.status} - ${response.statusText}`)
+      const errorText = await response.text()
+      console.error("Resposta da API:", errorText)
+      throw new Error(`Erro na API do Tiny: ${response.statusText}`)
     }
 
-    const responseText = await response.text();
-    console.log("Resposta da API (primeiros 200 caracteres):", responseText.substring(0, 200) + "...");
+    const data = await response.json()
+    console.log("✅ Dados recebidos da API do Tiny")
 
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (error) {
-      console.error("❌ Erro ao fazer parse da resposta:", error);
-      throw new Error('Resposta inválida da API do Tiny');
-    }
-
-    if (!data || !data.itens) {
-      console.error("❌ Estrutura de resposta inválida:", data);
-      throw new Error('Estrutura de resposta inválida da API do Tiny');
-    }
-
-    console.log("✅ Dados recebidos da API do Tiny");
-    console.log(`📦 Total de pedidos: ${data.itens.length}`);
-
-    // Mapear os pedidos para o formato esperado pelo frontend
+    // Mapear os pedidos para o formato esperado
     const pedidos = data.itens.map(pedido => ({
       id: pedido.id.toString(),
       numero: pedido.numeroPedido.toString(),
@@ -96,10 +99,11 @@ Deno.serve(async (req) => {
       } : null
     }));
 
-    console.log("✅ Pedidos processados com sucesso");
-
     return new Response(
-      JSON.stringify({ pedidos }),
+      JSON.stringify({ 
+        pedidos,
+        access_token: currentToken // Retorna o novo token se foi renovado
+      }),
       { 
         headers: { 
           ...corsHeaders, 
