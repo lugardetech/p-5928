@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 interface TinyCustomer {
   nome: string;
@@ -51,8 +50,6 @@ const situacaoMap: Record<number, string> = {
 };
 
 export const useTinyOrders = (page = 1, perPage = 10) => {
-  const { toast } = useToast();
-
   return useQuery({
     queryKey: ["tiny-orders", page, perPage],
     queryFn: async () => {
@@ -106,19 +103,12 @@ export const useTinyOrders = (page = 1, perPage = 10) => {
     meta: {
       onError: (error: Error) => {
         console.error("Query error:", error);
-        toast({
-          variant: "destructive",
-          title: "Erro ao carregar pedidos",
-          description: error.message || "Ocorreu um erro ao carregar os pedidos",
-        });
       }
     }
   });
 };
 
 export const syncTinyOrders = async () => {
-  const { toast } = useToast();
-  
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
