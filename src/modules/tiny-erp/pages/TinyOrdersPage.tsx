@@ -12,11 +12,14 @@ export default function TinyOrdersPage() {
     async function fetchOrders() {
       try {
         setLoading(true);
-        const { data: { session } } = await supabase.auth.getSession();
-        const accessToken = session?.access_token;
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          throw new Error("Usuário não autenticado");
+        }
 
         const { data, error } = await supabase.functions.invoke('tiny-orders', {
-          body: { access_token: accessToken },
+          body: { userId: user.id },
         });
 
         if (error) throw error;
