@@ -17,16 +17,26 @@ export function TinyIntegrationStatus() {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleReauth = () => {
-    if (!hasCredentials) {
+  const handleReauth = async () => {
+    try {
+      console.log("Iniciando reautenticação...");
+      if (!hasCredentials) {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Configure suas credenciais antes de reautenticar.",
+        });
+        return;
+      }
+      await handleAuth();
+    } catch (error) {
+      console.error("Erro na reautenticação:", error);
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: "Configure suas credenciais antes de reautenticar.",
+        title: "Erro na reautenticação",
+        description: "Não foi possível reautenticar. Tente novamente.",
       });
-      return;
     }
-    handleAuth();
   };
 
   return (
@@ -77,7 +87,7 @@ export function TinyIntegrationStatus() {
           {hasCredentials && !isConnected && (
             <Button onClick={handleAuth}>Autenticar</Button>
           )}
-          {isConnected && (
+          {hasCredentials && (
             <Button onClick={handleReauth} variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
               Reautenticar
