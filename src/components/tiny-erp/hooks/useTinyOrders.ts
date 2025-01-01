@@ -152,9 +152,14 @@ export const useTinyOrders = () => {
 
       // Primeiro sincronizar com a API do Tiny
       console.log("🔄 Sincronizando pedidos com Tiny API...");
-      await supabase.functions.invoke('tiny-orders', {
+      const { data: syncData, error: syncError } = await supabase.functions.invoke('tiny-orders', {
         body: { access_token: accessToken }
       });
+
+      if (syncError) {
+        console.error("❌ Erro ao sincronizar pedidos:", syncError);
+        throw syncError;
+      }
 
       // Depois buscar pedidos do banco
       console.log("🔄 Buscando pedidos do banco de dados...");
@@ -170,17 +175,20 @@ export const useTinyOrders = () => {
 
       console.log("✅ Pedidos recebidos:", orders);
 
-      return orders.map((order) => ({
-        id: order.id,
-        numero: order.numero_pedido.toString(),
-        data_pedido: order.data_criacao,
-        cliente: {
-          nome: (order.cliente as TinyCustomer)?.nome || '-',
-          codigo: (order.cliente as TinyCustomer)?.codigo || '-'
-        },
-        situacao: situacaoMap[order.situacao] || 'Desconhecido',
-        valor_total: order.valor?.toFixed(2) || "0.00"
-      }));
+      return orders.map((order) => {
+        const cliente = order.cliente as Record<string, any> | null;
+        return {
+          id: order.id,
+          numero: order.numero_pedido.toString(),
+          data_pedido: order.data_criacao,
+          cliente: {
+            nome: cliente?.nome || '-',
+            codigo: cliente?.codigo || '-'
+          },
+          situacao: situacaoMap[order.situacao] || 'Desconhecido',
+          valor_total: order.valor?.toFixed(2) || "0.00"
+        };
+      });
     },
     retry: false,
     meta: {
