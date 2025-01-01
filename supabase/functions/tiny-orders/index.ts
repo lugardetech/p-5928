@@ -12,11 +12,16 @@ Deno.serve(async (req) => {
   try {
     console.log("=== Iniciando Edge Function tiny-orders ===")
     
-    const { access_token } = await req.json();
+    const { access_token, user_id } = await req.json();
     
     if (!access_token) {
       console.error("❌ Token de acesso não fornecido");
       throw new Error('Token de acesso não fornecido');
+    }
+
+    if (!user_id) {
+      console.error("❌ ID do usuário não fornecido");
+      throw new Error('ID do usuário não fornecido');
     }
 
     console.log("🔄 Fazendo requisição para API V3 do Tiny...");
@@ -60,7 +65,7 @@ Deno.serve(async (req) => {
       }
 
       const orderData = {
-        user_id: req.headers.get('x-user-id'),
+        user_id: user_id,
         tiny_id: parseInt(order.id),
         numero_pedido: parseInt(order.numeroPedido),
         situacao: parseInt(order.situacao) || 0,

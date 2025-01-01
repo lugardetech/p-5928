@@ -84,11 +84,12 @@ export const useTinyOrders = () => {
         throw new Error("Usuário não autenticado");
       }
 
-      // Buscar integração
+      // Buscar integração e token de acesso
       const { data: integration, error: integrationError } = await supabase
         .from("integrations")
         .select("*")
         .eq("name", "tiny_erp")
+        .eq("user_id", user.id)
         .maybeSingle();
 
       if (integrationError) {
@@ -114,7 +115,8 @@ export const useTinyOrders = () => {
       console.log("🔄 Sincronizando pedidos com Tiny API...");
       const { data: syncData, error: syncError } = await supabase.functions.invoke('tiny-orders', {
         body: { 
-          access_token: integration.access_token 
+          access_token: integration.access_token,
+          user_id: user.id
         }
       });
 
