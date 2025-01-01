@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useIntegrationStatus } from "@/hooks/mercadolivre/useIntegrationStatus";
-import { CheckCircle, Settings, XCircle } from "lucide-react";
+import { CheckCircle, RefreshCw, Settings, XCircle } from "lucide-react";
 import { MercadoLivreSettings } from "@/types/mercadolivre";
 import {
   Dialog,
@@ -10,9 +10,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CredentialsForm } from "./CredentialsForm";
+import { useToast } from "@/components/ui/use-toast";
 
 export function MercadoLivreIntegrationStatus() {
   const { data: status, isLoading } = useIntegrationStatus();
+  const { toast } = useToast();
 
   if (isLoading) {
     return <div>Carregando...</div>;
@@ -31,6 +33,18 @@ export function MercadoLivreIntegrationStatus() {
     });
 
     return `https://auth.mercadolivre.com.br/authorization?${params.toString()}`;
+  };
+
+  const handleReauth = () => {
+    if (!status?.isConfigured) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Configure suas credenciais antes de reautenticar.",
+      });
+      return;
+    }
+    window.location.href = getAuthUrl();
   };
 
   return (
@@ -82,11 +96,19 @@ export function MercadoLivreIntegrationStatus() {
             </p>
           )}
         </div>
-        {status?.isConfigured && !status?.isAuthenticated && (
-          <Button asChild>
-            <a href={getAuthUrl()}>Autenticar</a>
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {status?.isConfigured && !status?.isAuthenticated && (
+            <Button asChild>
+              <a href={getAuthUrl()}>Autenticar</a>
+            </Button>
+          )}
+          {status?.isAuthenticated && (
+            <Button onClick={handleReauth} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reautenticar
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

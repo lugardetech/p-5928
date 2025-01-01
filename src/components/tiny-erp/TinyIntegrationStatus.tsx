@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useIntegrationStatus } from "@/hooks/tiny-erp/useIntegrationStatus";
-import { CheckCircle, Settings, XCircle } from "lucide-react";
+import { CheckCircle, RefreshCw, Settings, XCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,29 +10,23 @@ import {
 } from "@/components/ui/dialog";
 import { CredentialsForm } from "./CredentialsForm";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 export function TinyIntegrationStatus() {
   const { hasCredentials, isConnected, handleAuth, status } = useIntegrationStatus();
   const [open, setOpen] = useState(false);
+  const { toast } = useToast();
 
-  const getAuthUrl = () => {
-    if (!status?.settings || typeof status.settings !== 'object') {
-      return "#";
+  const handleReauth = () => {
+    if (!hasCredentials) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Configure suas credenciais antes de reautenticar.",
+      });
+      return;
     }
-
-    const settings = status.settings as { client_id: string; redirect_uri: string };
-    if (!settings.client_id) {
-      return "#";
-    }
-
-    const params = new URLSearchParams({
-      client_id: settings.client_id,
-      redirect_uri: settings.redirect_uri,
-      scope: "openid",
-      response_type: "code",
-    });
-
-    return `https://accounts.tiny.com.br/realms/tiny/protocol/openid-connect/auth?${params.toString()}`;
+    handleAuth();
   };
 
   return (
@@ -84,9 +78,17 @@ export function TinyIntegrationStatus() {
             </p>
           )}
         </div>
-        {hasCredentials && !isConnected && (
-          <Button onClick={handleAuth}>Autenticar</Button>
-        )}
+        <div className="flex gap-2">
+          {hasCredentials && !isConnected && (
+            <Button onClick={handleAuth}>Autenticar</Button>
+          )}
+          {isConnected && (
+            <Button onClick={handleReauth} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reautenticar
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
