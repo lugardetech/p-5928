@@ -1,4 +1,4 @@
-import { Store, Package, AlertCircle } from "lucide-react";
+import { Store, Package, AlertCircle, ShoppingBag } from "lucide-react";
 import { SidebarSection, SidebarItem } from "./SidebarSection";
 import { useLocation } from "react-router-dom";
 
@@ -20,7 +20,7 @@ export function IntegrationsNavigation() {
       </SidebarItem>
       <SidebarItem 
         to="/integration/tiny-erp/orders" 
-        icon={ShoppingCart} 
+        icon={ShoppingBag} 
         currentPath={location.pathname}
         isSubmenuItem
       >
