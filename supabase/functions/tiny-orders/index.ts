@@ -20,18 +20,24 @@ serve(async (req) => {
     console.log("🔄 Buscando pedidos no Tiny ERP...");
     console.log("Token de acesso (primeiros 10 caracteres):", access_token.substring(0, 10) + "...");
 
-    const response = await fetch('https://api.tiny.com.br/public-api/v3/pedidos', {
-      method: 'GET',
+    // De acordo com a documentação, a URL base é api.tiny.com.br/api2
+    const response = await fetch('https://api.tiny.com.br/api2/pedidos.pesquisa.php', {
+      method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${access_token}`,
-        'Accept': 'application/json',
-      }
+      },
+      body: JSON.stringify({
+        pesquisa: {
+          situacao: 'Todos',
+          formato: 'JSON'
+        }
+      })
     });
 
     if (!response.ok) {
       console.error("❌ Erro na resposta da API:", response.status, response.statusText);
       
-      // Tratamento específico para erro 401
       if (response.status === 401) {
         throw new Error('Token de acesso expirado ou inválido. Por favor, reconecte sua conta do Tiny ERP.');
       }
@@ -51,18 +57,30 @@ serve(async (req) => {
       throw new Error('Erro ao processar resposta da API do Tiny');
     }
 
-    if (!data?.itens) {
-      console.error("❌ Resposta sem itens:", data);
+    if (!data?.retorno?.pedidos) {
+      console.error("❌ Resposta sem pedidos:", data);
       throw new Error('Resposta da API não contém pedidos');
     }
 
-    console.log("✅ Pedidos recebidos da API do Tiny");
-    console.log("Quantidade de pedidos:", data.itens.length);
+    const pedidos = data.retorno.pedidos.map((pedido: any) => ({
+      id: pedido.pedido.id,
+      numero: pedido.pedido.numero,
+      data_pedido: pedido.pedido.data_pedido,
+      cliente: {
+        nome: pedido.pedido.cliente?.nome || '-',
+        codigo: pedido.pedido.cliente?.codigo || '-'
+      },
+      situacao: pedido.pedido.situacao || '-',
+      valor_total: pedido.pedido.valor_total || "0.00"
+    }));
+
+    console.log("✅ Pedidos processados com sucesso");
+    console.log("Quantidade de pedidos:", pedidos.length);
     
     return new Response(
       JSON.stringify({
         status: "OK",
-        pedidos: data.itens || []
+        pedidos
       }),
       { 
         headers: { 
