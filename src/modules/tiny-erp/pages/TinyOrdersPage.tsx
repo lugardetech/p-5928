@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { OrdersTable } from "@/components/tiny-erp/OrdersTable";
 import { Button } from "@/components/ui/button";
-import { Sync } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { syncTinyOrders } from "@/components/tiny-erp/hooks/useTinyOrders";
 import { useToast } from "@/hooks/use-toast";
 
@@ -32,7 +32,7 @@ export default function TinyOrdersPage() {
           disabled={isLoading}
           className="flex items-center gap-2"
         >
-          <Sync className="h-4 w-4" />
+          <RefreshCw className="h-4 w-4" />
           {isLoading ? "Sincronizando..." : "Sincronizar Pedidos"}
         </Button>
       </header>
