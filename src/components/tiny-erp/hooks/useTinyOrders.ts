@@ -3,6 +3,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Json } from "@/integrations/supabase/types";
 
+interface TinyCustomer {
+  nome: string;
+  codigo: string;
+  fantasia?: string;
+  tipoPessoa?: string;
+  cpfCnpj?: string;
+  inscricaoEstadual?: string;
+  rg?: string;
+  telefone?: string;
+  celular?: string;
+  email?: string;
+  endereco?: {
+    endereco: string;
+    numero: string;
+    complemento?: string;
+    bairro: string;
+    municipio: string;
+    cep: string;
+    uf: string;
+    pais: string;
+  };
+  id?: number;
+}
+
 export interface Order {
   id: string;
   numero: string;
@@ -151,8 +175,8 @@ export const useTinyOrders = () => {
         numero: order.numero_pedido.toString(),
         data_pedido: order.data_criacao,
         cliente: {
-          nome: order.cliente?.nome || '-',
-          codigo: order.cliente?.codigo || '-'
+          nome: (order.cliente as TinyCustomer)?.nome || '-',
+          codigo: (order.cliente as TinyCustomer)?.codigo || '-'
         },
         situacao: situacaoMap[order.situacao] || 'Desconhecido',
         valor_total: order.valor?.toFixed(2) || "0.00"
