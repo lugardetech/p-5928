@@ -35,21 +35,19 @@ export default function LoginPage() {
           description: "Você foi desconectado do sistema",
         });
       }
-    });
-
-    // Escutar erros de autenticação
-    const { data: { subscription: errorSubscription } } = supabase.auth.onError((error) => {
-      console.error("Auth error:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao realizar login",
-        description: "Verifique suas credenciais e tente novamente",
-      });
+      // Tratamento de erros através dos eventos de autenticação
+      if (event === "USER_DELETED" || event === "TOKEN_REFRESHED") {
+        console.error("Auth event error:", event);
+        toast({
+          variant: "destructive",
+          title: "Erro ao realizar login",
+          description: "Verifique suas credenciais e tente novamente",
+        });
+      }
     });
 
     return () => {
       subscription.unsubscribe();
-      errorSubscription.unsubscribe();
     };
   }, [navigate, toast]);
 
