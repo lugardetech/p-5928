@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
       const { error: upsertError } = await supabase
         .from('tiny_orders')
         .upsert({
-          user_id: req.headers.get('x-user-id'), // Obtém o user_id do cabeçalho
+          user_id: req.headers.get('x-user-id'),
           tiny_id: parseInt(order.id),
           numero_pedido: parseInt(order.numero),
           situacao: parseInt(order.situacao),
