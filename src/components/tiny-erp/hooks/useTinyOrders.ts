@@ -115,9 +115,6 @@ export const useTinyOrders = () => {
       const { data: syncData, error: syncError } = await supabase.functions.invoke('tiny-orders', {
         body: { 
           access_token: integration.access_token 
-        },
-        headers: {
-          'x-user-id': user.id
         }
       });
 
@@ -131,6 +128,7 @@ export const useTinyOrders = () => {
       const { data: orders, error: ordersError } = await supabase
         .from('tiny_orders')
         .select('*')
+        .eq('user_id', user.id)
         .order('data_criacao', { ascending: false });
 
       if (ordersError) {
