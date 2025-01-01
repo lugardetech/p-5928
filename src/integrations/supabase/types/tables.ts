@@ -53,6 +53,66 @@ export interface Tables {
     };
     Relationships: [];
   };
+
+  tiny_orders: {
+    Row: {
+      id: string;
+      user_id: string | null;
+      tiny_id: number;
+      numero_pedido: number;
+      situacao: number;
+      data_criacao: string | null;
+      data_prevista: string | null;
+      valor: number | null;
+      cliente: Json | null;
+      vendedor: Json | null;
+      transportador: Json | null;
+      ecommerce: Json | null;
+      created_at: string | null;
+      updated_at: string | null;
+    };
+    Insert: {
+      id?: string;
+      user_id?: string | null;
+      tiny_id: number;
+      numero_pedido: number;
+      situacao: number;
+      data_criacao?: string | null;
+      data_prevista?: string | null;
+      valor?: number | null;
+      cliente?: Json | null;
+      vendedor?: Json | null;
+      transportador?: Json | null;
+      ecommerce?: Json | null;
+      created_at?: string | null;
+      updated_at?: string | null;
+    };
+    Update: {
+      id?: string;
+      user_id?: string | null;
+      tiny_id?: number;
+      numero_pedido?: number;
+      situacao?: number;
+      data_criacao?: string | null;
+      data_prevista?: string | null;
+      valor?: number | null;
+      cliente?: Json | null;
+      vendedor?: Json | null;
+      transportador?: Json | null;
+      ecommerce?: Json | null;
+      created_at?: string | null;
+      updated_at?: string | null;
+    };
+    Relationships: [
+      {
+        foreignKeyName: "tiny_orders_user_id_fkey";
+        columns: ["user_id"];
+        isOneToOne: false;
+        referencedRelation: "users";
+        referencedColumns: ["id"];
+      }
+    ];
+  };
 }
 
 export type TablesInsert<T extends keyof Tables> = Tables[T]['Insert']

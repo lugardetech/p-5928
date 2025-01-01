@@ -1162,6 +1162,57 @@ export type Database = {
         }
         Relationships: []
       }
+      tiny_orders: {
+        Row: {
+          cliente: Json | null
+          created_at: string | null
+          data_criacao: string | null
+          data_prevista: string | null
+          ecommerce: Json | null
+          id: string
+          numero_pedido: number
+          situacao: number
+          tiny_id: number
+          transportador: Json | null
+          updated_at: string | null
+          user_id: string | null
+          valor: number | null
+          vendedor: Json | null
+        }
+        Insert: {
+          cliente?: Json | null
+          created_at?: string | null
+          data_criacao?: string | null
+          data_prevista?: string | null
+          ecommerce?: Json | null
+          id?: string
+          numero_pedido: number
+          situacao: number
+          tiny_id: number
+          transportador?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          valor?: number | null
+          vendedor?: Json | null
+        }
+        Update: {
+          cliente?: Json | null
+          created_at?: string | null
+          data_criacao?: string | null
+          data_prevista?: string | null
+          ecommerce?: Json | null
+          id?: string
+          numero_pedido?: number
+          situacao?: number
+          tiny_id?: number
+          transportador?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          valor?: number | null
+          vendedor?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
