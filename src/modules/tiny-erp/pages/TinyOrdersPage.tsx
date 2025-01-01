@@ -3,11 +3,13 @@ import { OrdersTable } from "@/components/tiny-erp/OrdersTable";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { syncTinyOrders } from "@/components/tiny-erp/hooks/useTinyOrders";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function TinyOrdersPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleSync = async () => {
     try {
@@ -19,6 +21,8 @@ export default function TinyOrdersPage() {
           title: "Sincronização concluída",
           description: `${result.total} pedidos foram sincronizados com sucesso!`,
         });
+        // Invalida o cache após sincronização bem-sucedida
+        await queryClient.invalidateQueries({ queryKey: ["tiny-orders"] });
       }
     } catch (error: any) {
       console.error("Erro na sincronização:", error);

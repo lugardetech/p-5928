@@ -99,12 +99,8 @@ export const useTinyOrders = (page = 1, perPage = 10) => {
         totalPages: Math.ceil((count || 0) / perPage)
       };
     },
-    retry: false,
-    meta: {
-      onError: (error: Error) => {
-        console.error("Query error:", error);
-      }
-    }
+    staleTime: Infinity, // Mantém os dados em cache até serem invalidados manualmente
+    retry: false
   });
 };
 
