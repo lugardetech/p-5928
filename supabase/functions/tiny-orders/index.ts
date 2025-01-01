@@ -12,75 +12,13 @@ Deno.serve(async (req) => {
   try {
     console.log("=== Iniciando Edge Function tiny-orders ===")
     
-    const { userId } = await req.json();
+    const { access_token } = await req.json();
     
-    if (!userId) {
-      console.error("❌ User ID não fornecido");
-      throw new Error('User ID não fornecido');
+    if (!access_token) {
+      console.error("❌ Token de acesso não fornecido");
+      throw new Error('Token de acesso não fornecido');
     }
 
-    console.log("🔄 Buscando integração do usuário...");
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    const { data: integration, error: integrationError } = await supabase
-      .from('integrations')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('name', 'tiny_erp')
-      .single();
-
-    if (integrationError) {
-      console.error("❌ Erro ao buscar integração:", integrationError);
-      throw new Error('Erro ao buscar integração');
-    }
-
-    if (!integration?.access_token) {
-      console.error("❌ Token de acesso não encontrado");
-      throw new Error('Token de acesso não encontrado');
-    }
-
-    console.log("✅ Integração encontrada");
-
-    // Verificar se o token está expirado
-    if (integration.token_expires_at) {
-      const expiresAt = new Date(integration.token_expires_at);
-      if (expiresAt < new Date()) {
-        console.log("🔄 Token expirado, tentando renovar...");
-        
-        const { data: refreshData, error: refreshError } = await supabase.functions.invoke('tiny-token-refresh', {
-          body: { 
-            refresh_token: integration.refresh_token,
-            client_id: integration.settings.client_id,
-            client_secret: integration.settings.client_secret
-          }
-        });
-
-        if (refreshError) {
-          console.error("❌ Erro ao renovar token:", refreshError);
-          throw new Error('Erro ao renovar token. Por favor, reconecte sua conta do Tiny ERP.');
-        }
-
-        // Atualizar tokens no banco
-        const { error: updateError } = await supabase
-          .from('integrations')
-          .update({
-            access_token: refreshData.access_token,
-            refresh_token: refreshData.refresh_token,
-            token_expires_at: refreshData.token_expires_at,
-            refresh_token_expires_at: refreshData.refresh_token_expires_at
-          })
-          .eq('id', integration.id);
-
-        if (updateError) {
-          console.error("❌ Erro ao atualizar tokens:", updateError);
-          throw updateError;
-        }
-
-        integration.access_token = refreshData.access_token;
-      }
-    }
-
-    // Fazer requisição para a API do Tiny
     console.log("🔄 Fazendo requisição para API do Tiny...");
     const response = await fetch('https://api.tiny.com.br/api2/pedidos.pesquisa.php', {
       method: 'POST',
@@ -88,7 +26,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        token: integration.access_token,
+        token: access_token,
         formato: "json",
         pesquisa: {
           situacao: "todos",
@@ -113,27 +51,31 @@ Deno.serve(async (req) => {
       throw new Error('Resposta inválida da API do Tiny');
     }
 
+    // Criar cliente Supabase
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     // Salvar pedidos no banco
     console.log("🔄 Salvando pedidos no banco de dados...");
     const orders = data.retorno.pedidos || [];
+    
     for (const order of orders) {
       const pedido = order.pedido;
+      
       const { error: upsertError } = await supabase
         .from('tiny_orders')
         .upsert({
-          user_id: userId,
-          tiny_id: pedido.id,
-          numero_pedido: pedido.numeroPedido,
-          situacao: pedido.situacao,
-          data_criacao: pedido.dataCriacao,
-          data_prevista: pedido.dataPrevista,
-          valor: parseFloat(pedido.valor),
-          cliente: pedido.cliente,
-          vendedor: pedido.vendedor,
-          transportador: pedido.transportador,
-          ecommerce: pedido.ecommerce
+          tiny_id: parseInt(pedido.id),
+          numero_pedido: parseInt(pedido.numero),
+          situacao: parseInt(pedido.situacao),
+          data_criacao: pedido.data_pedido,
+          data_prevista: pedido.data_prevista,
+          valor: parseFloat(pedido.valor_total || 0),
+          cliente: pedido.cliente || null,
+          vendedor: pedido.vendedor || null,
+          transportador: pedido.transportador || null,
+          ecommerce: pedido.ecommerce || null
         }, {
-          onConflict: 'user_id,tiny_id'
+          onConflict: 'tiny_id'
         });
 
       if (upsertError) {

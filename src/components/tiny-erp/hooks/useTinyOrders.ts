@@ -150,7 +150,7 @@ export const useTinyOrders = () => {
 
       console.log("✅ Token de acesso válido encontrado");
 
-      // Primeiro sincronizar com a API do Tiny
+      // Sincronizar com a API do Tiny
       console.log("🔄 Sincronizando pedidos com Tiny API...");
       const { data: syncData, error: syncError } = await supabase.functions.invoke('tiny-orders', {
         body: { access_token: accessToken }
@@ -161,7 +161,7 @@ export const useTinyOrders = () => {
         throw syncError;
       }
 
-      // Depois buscar pedidos do banco
+      // Buscar pedidos do banco
       console.log("🔄 Buscando pedidos do banco de dados...");
       const { data: orders, error: ordersError } = await supabase
         .from('tiny_orders')
