@@ -35,6 +35,18 @@ function isTinyErpSettings(settings: Json | null): settings is TinyErpSettings {
   );
 }
 
+const situacaoMap: Record<number, string> = {
+  0: "Pendente",
+  1: "Aprovado",
+  2: "Cancelado",
+  3: "Em Andamento",
+  4: "Em Digitação",
+  5: "Pronto para Envio",
+  6: "Enviado",
+  7: "Entregue",
+  8: "Devolvido"
+};
+
 export const useTinyOrders = () => {
   const { toast } = useToast();
 
@@ -114,33 +126,36 @@ export const useTinyOrders = () => {
 
       console.log("✅ Token de acesso válido encontrado");
 
-      // Chamar Edge Function
-      console.log("🔄 Chamando Edge Function tiny-orders...");
-      const { data, error: functionError } = await supabase.functions.invoke('tiny-orders', {
+      // Primeiro sincronizar com a API do Tiny
+      console.log("🔄 Sincronizando pedidos com Tiny API...");
+      await supabase.functions.invoke('tiny-orders', {
         body: { access_token: accessToken }
       });
 
-      if (functionError) {
-        console.error("❌ Erro na Edge Function:", functionError);
-        throw new Error(functionError.message);
+      // Depois buscar pedidos do banco
+      console.log("🔄 Buscando pedidos do banco de dados...");
+      const { data: orders, error: ordersError } = await supabase
+        .from('tiny_orders')
+        .select('*')
+        .order('data_criacao', { ascending: false });
+
+      if (ordersError) {
+        console.error("❌ Erro ao buscar pedidos:", ordersError);
+        throw new Error("Erro ao buscar pedidos do banco de dados");
       }
 
-      console.log("✅ Pedidos recebidos:", data);
-      
-      if (!data?.pedidos) {
-        throw new Error("Nenhum pedido encontrado");
-      }
+      console.log("✅ Pedidos recebidos:", orders);
 
-      return data.pedidos.map((pedido: any) => ({
-        id: pedido.id,
-        numero: pedido.numero,
-        data_pedido: pedido.data_pedido,
+      return orders.map((order) => ({
+        id: order.id,
+        numero: order.numero_pedido.toString(),
+        data_pedido: order.data_criacao,
         cliente: {
-          nome: pedido.cliente?.nome || '-',
-          codigo: pedido.cliente?.codigo || '-'
+          nome: order.cliente?.nome || '-',
+          codigo: order.cliente?.codigo || '-'
         },
-        situacao: pedido.situacao || '-',
-        valor_total: pedido.valor_total?.toFixed(2) || "0.00"
+        situacao: situacaoMap[order.situacao] || 'Desconhecido',
+        valor_total: order.valor?.toFixed(2) || "0.00"
       }));
     },
     retry: false,
