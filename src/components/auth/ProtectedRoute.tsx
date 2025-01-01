@@ -12,13 +12,14 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     // Verificar o estado inicial
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setIsAuthenticated(!!user);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
     });
 
     // Escutar mudanças no estado de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session?.user);
+      console.log("Auth state changed:", event, !!session);
+      setIsAuthenticated(!!session);
     });
 
     return () => {
@@ -26,6 +27,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     };
   }, []);
 
+  // Loading state
   if (isAuthenticated === null) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -34,9 +36,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
+  // Não autenticado - redireciona para login
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Autenticado - renderiza o conteúdo protegido
   return <>{children}</>;
-} 
+}
