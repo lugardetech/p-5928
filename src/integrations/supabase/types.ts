@@ -9,6 +9,428 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      accounts_payable: {
+        Row: {
+          amount: number
+          company_id: string | null
+          created_at: string | null
+          due_date: string
+          id: string
+          metadata: Json | null
+          notes: string | null
+          payment_date: string | null
+          payment_method: string | null
+          purchase_id: string | null
+          status: string | null
+          supplier_id: string | null
+          tiny_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          company_id?: string | null
+          created_at?: string | null
+          due_date: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          purchase_id?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          tiny_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          company_id?: string | null
+          created_at?: string | null
+          due_date?: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          purchase_id?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          tiny_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounts_payable_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accounts_receivable: {
+        Row: {
+          amount: number
+          company_id: string | null
+          created_at: string | null
+          customer_id: string | null
+          due_date: string
+          id: string
+          metadata: Json | null
+          notes: string | null
+          order_id: string | null
+          payment_date: string | null
+          payment_method: string | null
+          status: string | null
+          tiny_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          company_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          due_date: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          order_id?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          status?: string | null
+          tiny_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          company_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          due_date?: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          order_id?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          status?: string | null
+          tiny_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounts_receivable_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounts_receivable_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_interactions: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          duration: number | null
+          id: string
+          input: string
+          metadata: Json | null
+          model: string
+          output: string | null
+          tokens_used: number | null
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string | null
+          duration?: number | null
+          id?: string
+          input: string
+          metadata?: Json | null
+          model: string
+          output?: string | null
+          tokens_used?: number | null
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string | null
+          duration?: number | null
+          id?: string
+          input?: string
+          metadata?: Json | null
+          model?: string
+          output?: string | null
+          tokens_used?: number | null
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_interactions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_settings: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          model: string
+          provider: string
+          settings: Json | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          model: string
+          provider: string
+          settings?: Json | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          model?: string
+          provider?: string
+          settings?: Json | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_suggestions: {
+        Row: {
+          applied: boolean | null
+          applied_at: string | null
+          applied_by: string | null
+          company_id: string | null
+          confidence: number | null
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          metadata: Json | null
+          suggestion: string
+          type: string
+        }
+        Insert: {
+          applied?: boolean | null
+          applied_at?: string | null
+          applied_by?: string | null
+          company_id?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          metadata?: Json | null
+          suggestion: string
+          type: string
+        }
+        Update: {
+          applied?: boolean | null
+          applied_at?: string | null
+          applied_by?: string | null
+          company_id?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          metadata?: Json | null
+          suggestion?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_suggestions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_executions: {
+        Row: {
+          created_at: string | null
+          error: string | null
+          id: string
+          metadata: Json | null
+          result: Json | null
+          rule_id: string | null
+          status: string
+          trigger_entity_id: string
+          trigger_entity_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          error?: string | null
+          id?: string
+          metadata?: Json | null
+          result?: Json | null
+          rule_id?: string | null
+          status: string
+          trigger_entity_id: string
+          trigger_entity_type: string
+        }
+        Update: {
+          created_at?: string | null
+          error?: string | null
+          id?: string
+          metadata?: Json | null
+          result?: Json | null
+          rule_id?: string | null
+          status?: string
+          trigger_entity_id?: string
+          trigger_entity_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_executions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_rules: {
+        Row: {
+          actions: Json
+          company_id: string | null
+          conditions: Json
+          created_at: string | null
+          description: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          name: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          actions: Json
+          company_id?: string | null
+          conditions: Json
+          created_at?: string | null
+          description?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          name: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          actions?: Json
+          company_id?: string | null
+          conditions?: Json
+          created_at?: string | null
+          description?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          name?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_rules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cash_flow: {
+        Row: {
+          amount: number
+          category: string
+          company_id: string | null
+          created_at: string | null
+          date: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          reference_id: string | null
+          reference_type: string | null
+          tiny_id: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          company_id?: string | null
+          created_at?: string | null
+          date: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          reference_type?: string | null
+          tiny_id?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          company_id?: string | null
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          reference_type?: string | null
+          tiny_id?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_flow_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           active: boolean | null
@@ -88,6 +510,131 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_service: {
+        Row: {
+          assigned_to: string | null
+          company_id: string | null
+          created_at: string | null
+          customer_id: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          priority: string | null
+          resolution: string | null
+          resolved_at: string | null
+          status: string | null
+          subject: string
+          tiny_id: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          priority?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject: string
+          tiny_id?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          priority?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject?: string
+          tiny_id?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_service_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_service_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          address: Json | null
+          company_id: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          metadata: Json | null
+          name: string
+          phone: string | null
+          status: string | null
+          tax_id: string | null
+          tiny_id: string | null
+          type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: Json | null
+          company_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          name: string
+          phone?: string | null
+          status?: string | null
+          tax_id?: string | null
+          tiny_id?: string | null
+          type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: Json | null
+          company_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string
+          phone?: string | null
+          status?: string | null
+          tax_id?: string | null
+          tiny_id?: string | null
+          type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -311,6 +858,226 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          product_id: string | null
+          purchase_id: string | null
+          quantity: number
+          received_quantity: number | null
+          tiny_id: string | null
+          total_price: number
+          unit_price: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          purchase_id?: string | null
+          quantity: number
+          received_quantity?: number | null
+          tiny_id?: string | null
+          total_price: number
+          unit_price: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          purchase_id?: string | null
+          quantity?: number
+          received_quantity?: number | null
+          tiny_id?: string | null
+          total_price?: number
+          unit_price?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_items_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchases: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          delivery_date: string | null
+          expected_date: string | null
+          id: string
+          metadata: Json | null
+          notes: string | null
+          number: string
+          status: string | null
+          supplier_id: string | null
+          tiny_id: string | null
+          total: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string | null
+          delivery_date?: string | null
+          expected_date?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          number: string
+          status?: string | null
+          supplier_id?: string | null
+          tiny_id?: string | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string | null
+          delivery_date?: string | null
+          expected_date?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          number?: string
+          status?: string | null
+          supplier_id?: string | null
+          tiny_id?: string | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchases_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_interactions: {
+        Row: {
+          attachments: Json | null
+          created_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          service_id: string | null
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          created_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          service_id?: string | null
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          service_id?: string | null
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_interactions_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "customer_service"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          address: Json | null
+          company_id: string | null
+          contact_name: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          metadata: Json | null
+          name: string
+          payment_terms: string | null
+          phone: string | null
+          status: string | null
+          tax_id: string | null
+          tiny_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: Json | null
+          company_id?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          name: string
+          payment_terms?: string | null
+          phone?: string | null
+          status?: string | null
+          tax_id?: string | null
+          tiny_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: Json | null
+          company_id?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string
+          payment_terms?: string | null
+          phone?: string | null
+          status?: string | null
+          tax_id?: string | null
+          tiny_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
