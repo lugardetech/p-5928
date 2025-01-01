@@ -63,6 +63,29 @@ async function exchangeToken(settings: any, code: string): Promise<TokenResponse
   return await response.json();
 }
 
+async function updateIntegrationTokens(supabaseAdmin: any, userId: string, tokens: TokenResponse) {
+  console.log("Atualizando tokens no banco...");
+  const now = new Date();
+  const tokenExpiresAt = new Date(now.getTime() + tokens.expires_in * 1000);
+  const refreshTokenExpiresAt = new Date(now.getTime() + tokens.refresh_expires_in * 1000);
+
+  const { error: updateError } = await supabaseAdmin
+    .from('integrations')
+    .update({
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      token_expires_at: tokenExpiresAt.toISOString(),
+      refresh_token_expires_at: refreshTokenExpiresAt.toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('name', 'tiny_erp');
+
+  if (updateError) {
+    console.error("Erro ao salvar tokens:", updateError);
+    throw new Error('Erro ao salvar tokens');
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -71,6 +94,7 @@ serve(async (req) => {
   try {
     const { code, userId } = await req.json() as TokenExchangeRequest;
 
+    // Validação dos parâmetros obrigatórios
     if (!code || !userId) {
       console.error("Parâmetros obrigatórios ausentes", { code, userId });
       return new Response(
@@ -85,71 +109,16 @@ serve(async (req) => {
       );
     }
 
+    // Criar cliente Supabase
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Buscar configurações e trocar tokens
     const integration = await getIntegrationSettings(supabaseAdmin, userId);
     const tokens = await exchangeToken(integration.settings, code);
-
-    // Calcular timestamps de expiração
-    const now = new Date();
-    const tokenExpiresAt = new Date(now.getTime() + tokens.expires_in * 1000);
-    const refreshTokenExpiresAt = new Date(now.getTime() + tokens.refresh_expires_in * 1000);
-
-    // Atualizar tokens no banco
-    const { error: updateError } = await supabaseAdmin
-      .from('integrations')
-      .update({
-        token_expires_at: tokenExpiresAt.toISOString(),
-        refresh_token_expires_at: refreshTokenExpiresAt.toISOString()
-      })
-      .eq('id', integration.id);
-
-    if (updateError) {
-      console.error("Erro ao atualizar timestamps:", updateError);
-      throw new Error('Erro ao atualizar timestamps dos tokens');
-    }
-
-    // Salvar tokens nas secrets
-    const secretsResponse = await fetch(
-      `${Deno.env.get('SUPABASE_URL')}/functions/v1/secrets`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: `TINY_ACCESS_TOKEN_${userId}`,
-          value: tokens.access_token
-        })
-      }
-    );
-
-    if (!secretsResponse.ok) {
-      throw new Error('Erro ao salvar access token nas secrets');
-    }
-
-    const refreshSecretResponse = await fetch(
-      `${Deno.env.get('SUPABASE_URL')}/functions/v1/secrets`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: `TINY_REFRESH_TOKEN_${userId}`,
-          value: tokens.refresh_token
-        })
-      }
-    );
-
-    if (!refreshSecretResponse.ok) {
-      throw new Error('Erro ao salvar refresh token nas secrets');
-    }
+    await updateIntegrationTokens(supabaseAdmin, userId, tokens);
 
     return new Response(
       JSON.stringify({ success: true }),
