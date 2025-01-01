@@ -18,6 +18,7 @@ export default function LoginPage() {
 
     // Escutar mudanças no estado de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session);
       if (event === "SIGNED_IN" && session) {
         navigate("/");
       }
@@ -33,9 +34,20 @@ export default function LoginPage() {
       <Card className="w-full max-w-md p-6">
         <Auth
           supabaseClient={supabase}
-          appearance={{ theme: ThemeSupa }}
+          appearance={{ 
+            theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  brand: '#000000',
+                  brandAccent: '#333333',
+                }
+              }
+            }
+          }}
           providers={["google"]}
-          redirectTo={window.location.origin}
+          redirectTo={`${window.location.origin}/login`}
+          magicLink={false}
           localization={{
             variables: {
               sign_in: {
