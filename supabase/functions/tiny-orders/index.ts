@@ -5,14 +5,20 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 Deno.serve(async (req) => {
+  console.log("=== Iniciando Edge Function tiny-orders ===")
+  console.log("Método da requisição:", req.method)
+  
   // Importante: Tratar preflight request do CORS
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { 
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      }
+    })
   }
 
   try {
-    console.log("=== Iniciando Edge Function tiny-orders ===")
-    
     const { access_token, user_id } = await req.json();
     
     if (!access_token) {
