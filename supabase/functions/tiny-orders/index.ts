@@ -28,6 +28,11 @@ serve(async (req) => {
       }
     });
 
+    if (!response.ok) {
+      console.error("❌ Erro na resposta da API:", response.status, response.statusText);
+      throw new Error(`Erro na API do Tiny: ${response.status} ${response.statusText}`);
+    }
+
     const responseText = await response.text();
     console.log("📝 Resposta da API:", responseText);
 
@@ -36,12 +41,13 @@ serve(async (req) => {
       data = JSON.parse(responseText);
     } catch (e) {
       console.error("❌ Erro ao fazer parse da resposta:", e);
+      console.error("Resposta recebida:", responseText);
       throw new Error('Erro ao processar resposta da API do Tiny');
     }
 
-    if (!response.ok) {
-      console.error("❌ Erro retornado pela API:", data);
-      throw new Error(data.message || 'Erro ao buscar pedidos');
+    if (!data?.itens) {
+      console.error("❌ Resposta sem itens:", data);
+      throw new Error('Resposta da API não contém pedidos');
     }
 
     console.log("✅ Pedidos recebidos da API do Tiny");
