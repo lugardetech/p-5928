@@ -1,45 +1,94 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
+import { corsHeaders } from '../_shared/cors.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-interface TinyOrder {
-  id: number;
-  situacao: number;
-  numeroPedido: number;
-  dataCriacao: string;
-  dataPrevista: string;
-  cliente: any;
-  valor: string;
-  vendedor: any;
-  transportador: any;
-  ecommerce: any;
-}
-
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { access_token } = await req.json();
-
-    if (!access_token) {
-      throw new Error("Token de acesso não fornecido");
+    console.log("=== Iniciando Edge Function tiny-orders ===")
+    
+    const { userId } = await req.json();
+    
+    if (!userId) {
+      console.error("❌ User ID não fornecido");
+      throw new Error('User ID não fornecido');
     }
 
-    console.log("🔄 Buscando pedidos no Tiny...");
+    console.log("🔄 Buscando integração do usuário...");
+    const supabase = createClient(supabaseUrl, supabaseKey);
     
-    const tinyResponse = await fetch("https://api.tiny.com.br/api2/pedidos.pesquisa.php", {
-      method: "POST",
+    const { data: integration, error: integrationError } = await supabase
+      .from('integrations')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('name', 'tiny_erp')
+      .single();
+
+    if (integrationError) {
+      console.error("❌ Erro ao buscar integração:", integrationError);
+      throw new Error('Erro ao buscar integração');
+    }
+
+    if (!integration?.access_token) {
+      console.error("❌ Token de acesso não encontrado");
+      throw new Error('Token de acesso não encontrado');
+    }
+
+    console.log("✅ Integração encontrada");
+
+    // Verificar se o token está expirado
+    if (integration.token_expires_at) {
+      const expiresAt = new Date(integration.token_expires_at);
+      if (expiresAt < new Date()) {
+        console.log("🔄 Token expirado, tentando renovar...");
+        
+        const { data: refreshData, error: refreshError } = await supabase.functions.invoke('tiny-token-refresh', {
+          body: { 
+            refresh_token: integration.refresh_token,
+            client_id: integration.settings.client_id,
+            client_secret: integration.settings.client_secret
+          }
+        });
+
+        if (refreshError) {
+          console.error("❌ Erro ao renovar token:", refreshError);
+          throw new Error('Erro ao renovar token. Por favor, reconecte sua conta do Tiny ERP.');
+        }
+
+        // Atualizar tokens no banco
+        const { error: updateError } = await supabase
+          .from('integrations')
+          .update({
+            access_token: refreshData.access_token,
+            refresh_token: refreshData.refresh_token,
+            token_expires_at: refreshData.token_expires_at,
+            refresh_token_expires_at: refreshData.refresh_token_expires_at
+          })
+          .eq('id', integration.id);
+
+        if (updateError) {
+          console.error("❌ Erro ao atualizar tokens:", updateError);
+          throw updateError;
+        }
+
+        integration.access_token = refreshData.access_token;
+      }
+    }
+
+    // Fazer requisição para a API do Tiny
+    console.log("🔄 Fazendo requisição para API do Tiny...");
+    const response = await fetch('https://api.tiny.com.br/api2/pedidos.pesquisa.php', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        token: access_token,
+        token: integration.access_token,
         formato: "json",
         pesquisa: {
           situacao: "todos",
@@ -48,47 +97,31 @@ serve(async (req) => {
       }),
     });
 
-    if (!tinyResponse.ok) {
-      throw new Error(`Erro ao buscar pedidos: ${tinyResponse.statusText}`);
+    if (!response.ok) {
+      console.error(`❌ Erro na API do Tiny: ${response.status} - ${response.statusText}`);
+      const errorText = await response.text();
+      console.error("Resposta da API:", errorText);
+      throw new Error(`Erro na API do Tiny: ${response.statusText}`);
     }
 
-    const data = await tinyResponse.json();
-    console.log("✅ Pedidos recebidos:", data);
+    const data = await response.json();
+    console.log("✅ Dados recebidos da API do Tiny");
 
-    if (data.retorno.status === "Erro") {
-      throw new Error(`Erro da API Tiny: ${data.retorno.registros}`);
+    // Validar a resposta
+    if (!data?.retorno?.pedidos) {
+      console.error("❌ Resposta inválida da API do Tiny:", data);
+      throw new Error('Resposta inválida da API do Tiny');
     }
 
-    // Criar cliente Supabase
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Obter user_id do token de autorização
-    const authHeader = req.headers.get('Authorization');
-    const token = authHeader?.replace('Bearer ', '');
-    
-    if (!token) {
-      throw new Error('Token de autorização não fornecido');
-    }
-
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    
-    if (userError || !user) {
-      throw new Error('Usuário não autenticado');
-    }
-
+    // Salvar pedidos no banco
     console.log("🔄 Salvando pedidos no banco de dados...");
-
-    // Salvar cada pedido no banco
     const orders = data.retorno.pedidos || [];
     for (const order of orders) {
       const pedido = order.pedido;
-      const { error: upsertError } = await supabaseClient
+      const { error: upsertError } = await supabase
         .from('tiny_orders')
         .upsert({
-          user_id: user.id,
+          user_id: userId,
           tiny_id: pedido.id,
           numero_pedido: pedido.numeroPedido,
           situacao: pedido.situacao,
@@ -111,20 +144,27 @@ serve(async (req) => {
 
     console.log("✅ Pedidos salvos com sucesso!");
 
-    return new Response(JSON.stringify({ 
-      success: true,
-      pedidos: orders.map((o: any) => o.pedido)
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ success: true, pedidos: orders }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
+        status: 200,
+      },
+    );
 
   } catch (error) {
-    console.error("❌ Erro:", error);
+    console.error("❌ Erro na Edge Function:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       },
     );
   }
