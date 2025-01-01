@@ -4,11 +4,20 @@ import { OrdersTableContent } from "./OrdersTableContent";
 import { useTinyOrders } from "./hooks/useTinyOrders";
 import { Card } from "@/components/ui/card";
 
-export const OrdersTable = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const { data: orders, isLoading, error } = useTinyOrders();
+interface OrdersTableProps {
+  data?: any[];
+  isLoading?: boolean;
+}
 
-  if (isLoading) {
+export const OrdersTable = ({ data, isLoading }: OrdersTableProps = {}) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const hookResult = useTinyOrders();
+  
+  const orders = data || hookResult.data;
+  const loading = isLoading ?? hookResult.isLoading;
+  const error = hookResult.error;
+
+  if (loading) {
     return (
       <div className="min-h-[200px] flex items-center justify-center">
         <p className="text-muted-foreground">Carregando pedidos...</p>

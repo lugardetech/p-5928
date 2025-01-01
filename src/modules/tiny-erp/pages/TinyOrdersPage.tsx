@@ -1,6 +1,41 @@
 import { OrdersTable } from "@/components/tiny-erp/OrdersTable";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function TinyOrdersPage() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchOrders() {
+      try {
+        setLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        const accessToken = session?.access_token;
+
+        const { data, error } = await supabase.functions.invoke('tiny-orders', {
+          body: { access_token: accessToken },
+        });
+
+        if (error) throw error;
+        setOrders(data.pedidos || []);
+      } catch (error) {
+        console.error('Erro ao buscar pedidos:', error);
+        toast({
+          title: "Erro ao buscar pedidos",
+          description: error.message,
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchOrders();
+  }, []);
+
   return (
     <div className="space-y-8">
       <header>
@@ -8,7 +43,7 @@ export default function TinyOrdersPage() {
         <p className="text-sm text-muted-foreground">Gerencie seus pedidos do Tiny ERP</p>
       </header>
 
-      <OrdersTable />
+      <OrdersTable data={orders} isLoading={loading} />
     </div>
   );
 }

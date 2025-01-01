@@ -20,26 +20,37 @@ serve(async (req) => {
 
     console.log("🔄 Buscando pedidos no Tiny ERP...");
 
-    const response = await fetch('https://api.tiny.com.br/api2/pedidos.pesquisa.php', {
-      method: 'POST',
+    const response = await fetch('https://api.tiny.com.br/public-api/v3/pedidos', {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        token: access_token,
-        formato: 'json'
-      })
+        'Authorization': `Bearer ${access_token}`,
+        'Accept': 'application/json',
+      }
     });
 
-    if (!response.ok) {
-      throw new Error(`Erro ao buscar pedidos: ${response.statusText}`);
+    const responseText = await response.text();
+    console.log("📝 Resposta da API:", responseText);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error("❌ Erro ao fazer parse da resposta:", e);
+      throw new Error('Erro ao processar resposta da API do Tiny');
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      console.error("❌ Erro retornado pela API:", data);
+      throw new Error(data.message || 'Erro ao buscar pedidos');
+    }
+
     console.log("✅ Pedidos recebidos da API do Tiny");
 
     return new Response(
-      JSON.stringify(data.retorno),
+      JSON.stringify({
+        status: "OK",
+        pedidos: data.itens || []
+      }),
       { 
         headers: { 
           ...corsHeaders,
@@ -50,9 +61,12 @@ serve(async (req) => {
   } catch (error) {
     console.error("❌ Erro:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        status: "Erro",
+        error: error.message 
+      }),
       { 
-        status: 400,
+        status: error.message.includes('Token') ? 401 : 400,
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',
