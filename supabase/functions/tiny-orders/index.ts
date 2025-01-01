@@ -26,9 +26,10 @@ Deno.serve(async (req) => {
 
     console.log("🔄 Buscando todos os pedidos da API V3 do Tiny...");
     
-    let allOrders = [];
+    let totalOrders = 0;
     let page = 1;
     let hasMore = true;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     while (hasMore) {
       console.log(`Buscando página ${page}...`);
@@ -48,65 +49,61 @@ Deno.serve(async (req) => {
       }
 
       const data = await response.json();
-      console.log(`✅ Recebidos ${data?.itens?.length || 0} pedidos da página ${page}`);
+      const pageOrders = data?.itens || [];
+      console.log(`✅ Recebidos ${pageOrders.length} pedidos da página ${page}`);
 
-      if (!data?.itens?.length) {
+      if (!pageOrders.length) {
         hasMore = false;
+        console.log("Não há mais pedidos para buscar.");
       } else {
-        allOrders = [...allOrders, ...data.itens];
+        // Salvar pedidos da página atual
+        console.log(`🔄 Salvando ${pageOrders.length} pedidos da página ${page}...`);
+        
+        for (const order of pageOrders) {
+          if (!order.id || !order.numeroPedido) {
+            console.error("❌ Dados obrigatórios faltando no pedido:", order);
+            continue;
+          }
+
+          const orderData = {
+            user_id: user_id,
+            tiny_id: parseInt(order.id),
+            numero_pedido: parseInt(order.numeroPedido),
+            situacao: parseInt(order.situacao) || 0,
+            data_criacao: order.dataCriacao ? new Date(order.dataCriacao) : null,
+            data_prevista: order.dataPrevista ? new Date(order.dataPrevista) : null,
+            valor: parseFloat(order.valor || '0'),
+            cliente: order.cliente || null,
+            vendedor: order.vendedor || null,
+            transportador: order.transportador || null,
+            ecommerce: order.ecommerce || null
+          };
+
+          const { error: upsertError } = await supabase
+            .from('tiny_orders')
+            .upsert(orderData, {
+              onConflict: 'tiny_id'
+            });
+
+          if (upsertError) {
+            console.error(`❌ Erro ao salvar pedido ${order.numeroPedido}:`, upsertError);
+            continue;
+          }
+        }
+
+        console.log(`✅ Salvos ${pageOrders.length} pedidos da página ${page}`);
+        totalOrders += pageOrders.length;
         page++;
-      }
 
-      // Aguarda um pequeno intervalo para evitar sobrecarga na API
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-
-    console.log(`Total de pedidos encontrados: ${allOrders.length}`);
-
-    // Criar cliente Supabase
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Salvar pedidos no banco
-    console.log("🔄 Salvando pedidos no banco de dados...");
-    
-    for (const order of allOrders) {
-      console.log("Processando pedido:", order.numeroPedido);
-      
-      if (!order.id || !order.numeroPedido) {
-        console.error("❌ Dados obrigatórios faltando no pedido:", order);
-        continue;
-      }
-
-      const orderData = {
-        user_id: user_id,
-        tiny_id: parseInt(order.id),
-        numero_pedido: parseInt(order.numeroPedido),
-        situacao: parseInt(order.situacao) || 0,
-        data_criacao: order.dataCriacao ? new Date(order.dataCriacao) : null,
-        data_prevista: order.dataPrevista ? new Date(order.dataPrevista) : null,
-        valor: parseFloat(order.valor || '0'),
-        cliente: order.cliente || null,
-        vendedor: order.vendedor || null,
-        transportador: order.transportador || null,
-        ecommerce: order.ecommerce || null
-      };
-
-      const { error: upsertError } = await supabase
-        .from('tiny_orders')
-        .upsert(orderData, {
-          onConflict: 'tiny_id'
-        });
-
-      if (upsertError) {
-        console.error("❌ Erro ao salvar pedido:", upsertError);
-        throw new Error(`Erro ao salvar pedido: ${upsertError.message}`);
+        // Aguarda um pequeno intervalo para evitar sobrecarga na API
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
 
-    console.log("✅ Todos os pedidos foram salvos com sucesso!");
+    console.log(`✅ Sincronização concluída! Total de pedidos processados: ${totalOrders}`);
 
     return new Response(
-      JSON.stringify({ success: true, total: allOrders.length }),
+      JSON.stringify({ success: true, total: totalOrders }),
       { 
         headers: { 
           ...corsHeaders, 
