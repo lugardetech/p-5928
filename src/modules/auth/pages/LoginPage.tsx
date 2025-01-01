@@ -37,8 +37,19 @@ export default function LoginPage() {
       }
     });
 
+    // Escutar erros de autenticação
+    const { data: { subscription: errorSubscription } } = supabase.auth.onError((error) => {
+      console.error("Auth error:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao realizar login",
+        description: "Verifique suas credenciais e tente novamente",
+      });
+    });
+
     return () => {
       subscription.unsubscribe();
+      errorSubscription.unsubscribe();
     };
   }, [navigate, toast]);
 
@@ -61,14 +72,6 @@ export default function LoginPage() {
           providers={["google"]}
           redirectTo={`${window.location.origin}/login`}
           magicLink={false}
-          onError={(error) => {
-            console.error("Auth error:", error);
-            toast({
-              variant: "destructive",
-              title: "Erro ao realizar login",
-              description: "Verifique suas credenciais e tente novamente",
-            });
-          }}
           localization={{
             variables: {
               sign_in: {
