@@ -4,13 +4,16 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Verificar se já está autenticado
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", !!session);
       if (session) {
         navigate("/");
       }
@@ -18,16 +21,26 @@ export default function LoginPage() {
 
     // Escutar mudanças no estado de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session);
+      console.log("Auth state changed:", event, !!session);
       if (event === "SIGNED_IN" && session) {
+        toast({
+          title: "Login realizado com sucesso",
+          description: "Você será redirecionado para o dashboard",
+        });
         navigate("/");
+      }
+      if (event === "SIGNED_OUT") {
+        toast({
+          title: "Logout realizado com sucesso",
+          description: "Você foi desconectado do sistema",
+        });
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, toast]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -48,6 +61,14 @@ export default function LoginPage() {
           providers={["google"]}
           redirectTo={`${window.location.origin}/login`}
           magicLink={false}
+          onError={(error) => {
+            console.error("Auth error:", error);
+            toast({
+              variant: "destructive",
+              title: "Erro ao realizar login",
+              description: "Verifique suas credenciais e tente novamente",
+            });
+          }}
           localization={{
             variables: {
               sign_in: {
