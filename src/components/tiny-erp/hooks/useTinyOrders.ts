@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Json } from "@/integrations/supabase/types";
 
 interface TinyCustomer {
   nome: string;
@@ -37,12 +36,6 @@ export interface Order {
   };
   situacao: string;
   valor_total: string;
-}
-
-interface TinyErpSettings extends Record<string, any> {
-  client_id?: string;
-  client_secret?: string;
-  redirect_uri?: string;
 }
 
 const situacaoMap: Record<number, string> = {
@@ -165,19 +158,9 @@ export const syncTinyOrders = async () => {
 
     if (syncError) throw syncError;
 
-    toast({
-      title: "Sincronização concluída",
-      description: "Os pedidos foram sincronizados com sucesso!",
-    });
-
     return syncData;
   } catch (error: any) {
     console.error("Sync error:", error);
-    toast({
-      variant: "destructive",
-      title: "Erro na sincronização",
-      description: error.message || "Ocorreu um erro ao sincronizar os pedidos",
-    });
     throw error;
   }
 };

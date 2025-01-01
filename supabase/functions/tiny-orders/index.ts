@@ -24,41 +24,54 @@ Deno.serve(async (req) => {
       throw new Error('ID do usuário não fornecido');
     }
 
-    console.log("🔄 Fazendo requisição para API V3 do Tiny...");
-    const response = await fetch('https://api.tiny.com.br/public-api/v3/pedidos', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${access_token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    console.log("🔄 Buscando todos os pedidos da API V3 do Tiny...");
+    
+    let allOrders = [];
+    let page = 1;
+    let hasMore = true;
 
-    if (!response.ok) {
-      console.error(`❌ Erro na API do Tiny: ${response.status} - ${response.statusText}`);
-      const errorText = await response.text();
-      console.error("Resposta da API:", errorText);
-      throw new Error(`Erro na API do Tiny: ${response.statusText}`);
+    while (hasMore) {
+      console.log(`Buscando página ${page}...`);
+      const response = await fetch(`https://api.tiny.com.br/public-api/v3/pedidos?page=${page}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.error(`❌ Erro na API do Tiny: ${response.status} - ${response.statusText}`);
+        const errorText = await response.text();
+        console.error("Resposta da API:", errorText);
+        throw new Error(`Erro na API do Tiny: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`✅ Recebidos ${data?.itens?.length || 0} pedidos da página ${page}`);
+
+      if (!data?.itens?.length) {
+        hasMore = false;
+      } else {
+        allOrders = [...allOrders, ...data.itens];
+        page++;
+      }
+
+      // Aguarda um pequeno intervalo para evitar sobrecarga na API
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    const data = await response.json();
-    console.log("✅ Dados recebidos da API do Tiny:", data);
-
-    if (!data?.itens) {
-      console.error("❌ Resposta inválida da API do Tiny:", data);
-      throw new Error('Resposta inválida da API do Tiny');
-    }
+    console.log(`Total de pedidos encontrados: ${allOrders.length}`);
 
     // Criar cliente Supabase
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Salvar pedidos no banco
     console.log("🔄 Salvando pedidos no banco de dados...");
-    const orders = data.itens || [];
     
-    for (const order of orders) {
-      console.log("Processando pedido:", order);
+    for (const order of allOrders) {
+      console.log("Processando pedido:", order.numeroPedido);
       
-      // Validar dados obrigatórios
       if (!order.id || !order.numeroPedido) {
         console.error("❌ Dados obrigatórios faltando no pedido:", order);
         continue;
@@ -78,8 +91,6 @@ Deno.serve(async (req) => {
         ecommerce: order.ecommerce || null
       };
 
-      console.log("Dados preparados para inserção:", orderData);
-
       const { error: upsertError } = await supabase
         .from('tiny_orders')
         .upsert(orderData, {
@@ -92,10 +103,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log("✅ Pedidos salvos com sucesso!");
+    console.log("✅ Todos os pedidos foram salvos com sucesso!");
 
     return new Response(
-      JSON.stringify({ success: true, pedidos: orders }),
+      JSON.stringify({ success: true, total: allOrders.length }),
       { 
         headers: { 
           ...corsHeaders, 

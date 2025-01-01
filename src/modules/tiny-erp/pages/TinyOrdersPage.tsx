@@ -12,9 +12,21 @@ export default function TinyOrdersPage() {
   const handleSync = async () => {
     try {
       setIsLoading(true);
-      await syncTinyOrders();
-    } catch (error) {
+      const result = await syncTinyOrders();
+      
+      if (result?.total) {
+        toast({
+          title: "Sincronização concluída",
+          description: `${result.total} pedidos foram sincronizados com sucesso!`,
+        });
+      }
+    } catch (error: any) {
       console.error("Erro na sincronização:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro na sincronização",
+        description: error.message || "Ocorreu um erro ao sincronizar os pedidos",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -32,7 +44,7 @@ export default function TinyOrdersPage() {
           disabled={isLoading}
           className="flex items-center gap-2"
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           {isLoading ? "Sincronizando..." : "Sincronizar Pedidos"}
         </Button>
       </header>
