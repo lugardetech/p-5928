@@ -19,20 +19,13 @@ Deno.serve(async (req) => {
       throw new Error('Token de acesso não fornecido');
     }
 
-    console.log("🔄 Fazendo requisição para API do Tiny...");
-    const response = await fetch('https://api.tiny.com.br/api2/pedidos.pesquisa.php', {
-      method: 'POST',
+    console.log("🔄 Fazendo requisição para API V3 do Tiny...");
+    const response = await fetch('https://api.tiny.com.br/public-api/v3/pedidos', {
+      method: 'GET',
       headers: {
+        'Authorization': `Bearer ${access_token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        token: access_token,
-        formato: "json",
-        pesquisa: {
-          situacao: "todos",
-          formato_data_criacao: "yyyy-MM-dd"
-        }
-      }),
     });
 
     if (!response.ok) {
@@ -43,10 +36,10 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log("✅ Dados recebidos da API do Tiny");
+    console.log("✅ Dados recebidos da API do Tiny:", data);
 
     // Validar a resposta
-    if (!data?.retorno?.pedidos) {
+    if (!data?.itens) {
       console.error("❌ Resposta inválida da API do Tiny:", data);
       throw new Error('Resposta inválida da API do Tiny');
     }
@@ -56,24 +49,22 @@ Deno.serve(async (req) => {
 
     // Salvar pedidos no banco
     console.log("🔄 Salvando pedidos no banco de dados...");
-    const orders = data.retorno.pedidos || [];
+    const orders = data.itens || [];
     
     for (const order of orders) {
-      const pedido = order.pedido;
-      
       const { error: upsertError } = await supabase
         .from('tiny_orders')
         .upsert({
-          tiny_id: parseInt(pedido.id),
-          numero_pedido: parseInt(pedido.numero),
-          situacao: parseInt(pedido.situacao),
-          data_criacao: pedido.data_pedido,
-          data_prevista: pedido.data_prevista,
-          valor: parseFloat(pedido.valor_total || 0),
-          cliente: pedido.cliente || null,
-          vendedor: pedido.vendedor || null,
-          transportador: pedido.transportador || null,
-          ecommerce: pedido.ecommerce || null
+          tiny_id: parseInt(order.id),
+          numero_pedido: parseInt(order.numero),
+          situacao: parseInt(order.situacao),
+          data_criacao: order.data_pedido,
+          data_prevista: order.data_prevista,
+          valor: parseFloat(order.valor_total || 0),
+          cliente: order.cliente || null,
+          vendedor: order.vendedor || null,
+          transportador: order.transportador || null,
+          ecommerce: order.ecommerce || null
         }, {
           onConflict: 'tiny_id'
         });
