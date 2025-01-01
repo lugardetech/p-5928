@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { OrdersTableContent } from "./OrdersTableContent";
 import { useTinyOrders } from "./hooks/useTinyOrders";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface OrdersTableProps {
   data?: any[];
@@ -11,11 +13,15 @@ interface OrdersTableProps {
 
 export const OrdersTable = ({ data, isLoading }: OrdersTableProps = {}) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const hookResult = useTinyOrders();
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 10;
+
+  const hookResult = useTinyOrders(currentPage, perPage);
   
-  const orders = data || hookResult.data;
+  const orders = data || hookResult.data?.orders;
   const loading = isLoading ?? hookResult.isLoading;
   const error = hookResult.error;
+  const totalPages = hookResult.data?.totalPages || 1;
 
   if (loading) {
     return (
@@ -49,6 +55,32 @@ export const OrdersTable = ({ data, isLoading }: OrdersTableProps = {}) => {
         />
       </div>
       <OrdersTableContent orders={filteredOrders} />
+      
+      <div className="flex items-center justify-end space-x-2 mt-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+          disabled={currentPage === 1}
+          className="flex items-center gap-1"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Anterior
+        </Button>
+        <span className="text-sm text-muted-foreground">
+          Página {currentPage} de {totalPages}
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+          disabled={currentPage === totalPages}
+          className="flex items-center gap-1"
+        >
+          Próximo
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
     </Card>
   );
 };

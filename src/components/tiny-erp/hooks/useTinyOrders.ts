@@ -39,24 +39,10 @@ export interface Order {
   valor_total: string;
 }
 
-interface TinyErpSettings {
-  client_id: string;
-  client_secret: string;
-  redirect_uri: string;
-  [key: string]: string;
-}
-
-function isTinyErpSettings(settings: Json | null): settings is TinyErpSettings {
-  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
-    return false;
-  }
-
-  const s = settings as Record<string, unknown>;
-  return (
-    typeof s.client_id === 'string' &&
-    typeof s.client_secret === 'string' &&
-    typeof s.redirect_uri === 'string'
-  );
+interface TinyErpSettings extends Record<string, any> {
+  client_id?: string;
+  client_secret?: string;
+  redirect_uri?: string;
 }
 
 const situacaoMap: Record<number, string> = {
@@ -71,11 +57,11 @@ const situacaoMap: Record<number, string> = {
   8: "Devolvido"
 };
 
-export const useTinyOrders = () => {
+export const useTinyOrders = (page = 1, perPage = 10) => {
   const { toast } = useToast();
 
   return useQuery({
-    queryKey: ["tiny-orders"],
+    queryKey: ["tiny-orders", page, perPage],
     queryFn: async () => {
       console.log("=== Iniciando busca de pedidos ===");
       
@@ -84,54 +70,17 @@ export const useTinyOrders = () => {
         throw new Error("Usuário não autenticado");
       }
 
-      // Buscar integração e token de acesso
-      const { data: integration, error: integrationError } = await supabase
-        .from("integrations")
-        .select("*")
-        .eq("name", "tiny_erp")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (integrationError) {
-        console.error("❌ Erro ao buscar integração:", integrationError);
-        throw new Error("Erro ao buscar integração com Tiny ERP");
-      }
-
-      if (!integration) {
-        console.error("❌ Integração não encontrada");
-        throw new Error("Integração com Tiny ERP não configurada");
-      }
-
-      console.log("✅ Integração encontrada:", integration);
-
-      if (!integration.access_token) {
-        console.error("❌ Token de acesso não encontrado");
-        throw new Error("Token de acesso não encontrado. Por favor, reconecte sua conta.");
-      }
-
-      console.log("✅ Token de acesso válido encontrado");
-
-      // Sincronizar com a API do Tiny
-      console.log("🔄 Sincronizando pedidos com Tiny API...");
-      const { data: syncData, error: syncError } = await supabase.functions.invoke('tiny-orders', {
-        body: { 
-          access_token: integration.access_token,
-          user_id: user.id
-        }
-      });
-
-      if (syncError) {
-        console.error("❌ Erro ao sincronizar pedidos:", syncError);
-        throw syncError;
-      }
-
-      // Buscar pedidos do banco
+      // Buscar pedidos do banco com paginação
       console.log("🔄 Buscando pedidos do banco de dados...");
-      const { data: orders, error: ordersError } = await supabase
+      const from = (page - 1) * perPage;
+      const to = from + perPage - 1;
+
+      const { data: orders, error: ordersError, count } = await supabase
         .from('tiny_orders')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('user_id', user.id)
-        .order('data_criacao', { ascending: false });
+        .order('data_criacao', { ascending: false })
+        .range(from, to);
 
       if (ordersError) {
         console.error("❌ Erro ao buscar pedidos:", ordersError);
@@ -140,20 +89,25 @@ export const useTinyOrders = () => {
 
       console.log("✅ Pedidos recebidos:", orders);
 
-      return orders.map((order) => {
-        const cliente = order.cliente as Record<string, any> | null;
-        return {
-          id: order.id,
-          numero: order.numero_pedido.toString(),
-          data_pedido: order.data_criacao,
-          cliente: {
-            nome: cliente?.nome || '-',
-            codigo: cliente?.codigo || '-'
-          },
-          situacao: situacaoMap[order.situacao] || 'Desconhecido',
-          valor_total: order.valor?.toFixed(2) || "0.00"
-        };
-      });
+      return {
+        orders: orders.map((order) => {
+          const cliente = order.cliente as Record<string, any> | null;
+          return {
+            id: order.id,
+            numero: order.numero_pedido.toString(),
+            data_pedido: order.data_criacao,
+            cliente: {
+              nome: cliente?.nome || '-',
+              codigo: cliente?.codigo || '-'
+            },
+            situacao: situacaoMap[order.situacao] || 'Desconhecido',
+            valor_total: order.valor?.toFixed(2) || "0.00"
+          };
+        }),
+        totalCount: count || 0,
+        currentPage: page,
+        totalPages: Math.ceil((count || 0) / perPage)
+      };
     },
     retry: false,
     meta: {
@@ -167,4 +121,63 @@ export const useTinyOrders = () => {
       }
     }
   });
+};
+
+export const syncTinyOrders = async () => {
+  const { toast } = useToast();
+  
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error("Usuário não autenticado");
+    }
+
+    // Buscar integração e token de acesso
+    const { data: integration, error: integrationError } = await supabase
+      .from("integrations")
+      .select("*")
+      .eq("name", "tiny_erp")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (integrationError) {
+      console.error("❌ Erro ao buscar integração:", integrationError);
+      throw new Error("Erro ao buscar integração com Tiny ERP");
+    }
+
+    if (!integration) {
+      console.error("❌ Integração não encontrada");
+      throw new Error("Integração com Tiny ERP não configurada");
+    }
+
+    if (!integration.access_token) {
+      console.error("❌ Token de acesso não encontrado");
+      throw new Error("Token de acesso não encontrado. Por favor, reconecte sua conta.");
+    }
+
+    // Sincronizar com a API do Tiny
+    const { data: syncData, error: syncError } = await supabase.functions.invoke('tiny-orders', {
+      body: { 
+        access_token: integration.access_token,
+        user_id: user.id
+      }
+    });
+
+    if (syncError) throw syncError;
+
+    toast({
+      title: "Sincronização concluída",
+      description: "Os pedidos foram sincronizados com sucesso!",
+    });
+
+    return syncData;
+  } catch (error: any) {
+    console.error("Sync error:", error);
+    toast({
+      variant: "destructive",
+      title: "Erro na sincronização",
+      description: error.message || "Ocorreu um erro ao sincronizar os pedidos",
+    });
+    throw error;
+  }
 };
