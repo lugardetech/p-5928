@@ -52,23 +52,33 @@ Deno.serve(async (req) => {
     const orders = data.itens || [];
     
     for (const order of orders) {
-      console.log("Processando pedido:", order.id);
+      console.log("Processando pedido:", order);
       
+      // Validar dados obrigatórios
+      if (!order.id || !order.numero) {
+        console.error("❌ Dados obrigatórios faltando no pedido:", order);
+        continue; // Pula para o próximo pedido
+      }
+
+      const orderData = {
+        user_id: req.headers.get('x-user-id'),
+        tiny_id: parseInt(order.id),
+        numero_pedido: parseInt(order.numero) || 0, // Garante um valor numérico
+        situacao: parseInt(order.situacao) || 0,
+        data_criacao: order.data_pedido || null,
+        data_prevista: order.data_prevista || null,
+        valor: parseFloat(order.valor_total || '0'),
+        cliente: order.cliente || null,
+        vendedor: order.vendedor || null,
+        transportador: order.transportador || null,
+        ecommerce: order.ecommerce || null
+      };
+
+      console.log("Dados preparados para inserção:", orderData);
+
       const { error: upsertError } = await supabase
         .from('tiny_orders')
-        .upsert({
-          user_id: req.headers.get('x-user-id'),
-          tiny_id: parseInt(order.id),
-          numero_pedido: parseInt(order.numero),
-          situacao: parseInt(order.situacao),
-          data_criacao: order.data_pedido,
-          data_prevista: order.data_prevista,
-          valor: parseFloat(order.valor_total || 0),
-          cliente: order.cliente || null,
-          vendedor: order.vendedor || null,
-          transportador: order.transportador || null,
-          ecommerce: order.ecommerce || null
-        }, {
+        .upsert(orderData, {
           onConflict: 'tiny_id'
         });
 
