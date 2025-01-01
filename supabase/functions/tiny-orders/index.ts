@@ -19,22 +19,35 @@ serve(async (req) => {
     console.log("🔄 Buscando pedidos no Tiny ERP...");
     console.log("Token de acesso (primeiros 10 caracteres):", access_token.substring(0, 10) + "...");
 
-    const response = await fetch('https://api.tiny.com.br/api/v3/pedidos', {
+    // Construir URL com parâmetros de paginação
+    const url = new URL('https://api.tiny.com.br/api/v3/pedidos');
+    url.searchParams.append('limit', '50');
+    url.searchParams.append('offset', '0');
+
+    console.log("URL da requisição:", url.toString());
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${access_token}`,
         'Accept': 'application/json',
+        'Content-Type': 'application/json'
       }
     });
 
+    console.log("Status da resposta:", response.status);
+    console.log("Headers da resposta:", Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
       console.error("❌ Erro na resposta da API:", response.status, response.statusText);
+      const errorText = await response.text();
+      console.error("Corpo da resposta de erro:", errorText);
       
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 403) {
         throw new Error('Token de acesso expirado ou inválido. Por favor, reconecte sua conta do Tiny ERP.');
       }
       
-      throw new Error(`Erro na API do Tiny: ${response.status} ${response.statusText}`);
+      throw new Error(`Erro na API do Tiny: ${response.status} ${response.statusText}\n${errorText}`);
     }
 
     const responseText = await response.text();
@@ -58,6 +71,7 @@ serve(async (req) => {
       id: pedido.id.toString(),
       numero: pedido.numeroPedido.toString(),
       data_pedido: pedido.dataCriacao,
+      data_prevista: pedido.dataPrevista,
       cliente: {
         nome: pedido.cliente?.nome || '-',
         codigo: pedido.cliente?.codigo || '-',
@@ -75,8 +89,7 @@ serve(async (req) => {
         nome: pedido.transportador.nome,
         rastreamento: pedido.transportador.codigoRastreamento,
         url_rastreamento: pedido.transportador.urlRastreamento
-      } : null,
-      data_prevista: pedido.dataPrevista || null
+      } : null
     }));
 
     console.log("✅ Pedidos processados com sucesso");
