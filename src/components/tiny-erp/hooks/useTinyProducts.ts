@@ -27,7 +27,6 @@ export const useTinyProducts = () => {
 
       console.log("✅ Usuário autenticado:", user.id);
 
-      // Buscar produtos da tabela tiny_products
       const { data, error } = await supabase
         .from('tiny_products')
         .select('*')
@@ -43,13 +42,12 @@ export const useTinyProducts = () => {
       return data.map(item => ({
         id: item.id,
         nome: item.nome,
-        codigo: item.sku,
+        codigo: item.sku || '-',
         preco: item.preco?.toFixed(2) || "0.00",
         unidade: item.unidade || "-",
         estoque: item.estoque?.toString() || "0"
       }));
     },
-    retry: false,
     meta: {
       onError: (error: Error) => {
         console.error("❌ Erro na query:", error);
