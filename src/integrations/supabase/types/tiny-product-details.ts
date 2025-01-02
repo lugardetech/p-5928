@@ -18,7 +18,7 @@ export interface TinyProductDetails extends TinyProductBase {
   marca_nome: string | null;
   embalagem_id: number | null;
   embalagem_tipo: number | null;
-  embalagem_descricao: text | null;
+  embalagem_descricao: string | null;
   largura: number | null;
   altura: number | null;
   comprimento: number | null;
