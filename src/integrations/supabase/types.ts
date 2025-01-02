@@ -1213,72 +1213,470 @@ export type Database = {
         }
         Relationships: []
       }
-      tiny_products: {
+      tiny_product_attachments: {
         Row: {
           created_at: string | null
+          externo: boolean | null
+          id: string
+          product_id: string | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          externo?: boolean | null
+          id?: string
+          product_id?: string | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          externo?: boolean | null
+          id?: string
+          product_id?: string | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tiny_product_attachments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "tiny_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tiny_product_kit_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_descricao: string | null
+          item_id: number | null
+          item_sku: string | null
+          product_id: string | null
+          quantidade: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_descricao?: string | null
+          item_id?: number | null
+          item_sku?: string | null
+          product_id?: string | null
+          quantidade?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_descricao?: string | null
+          item_id?: number | null
+          item_sku?: string | null
+          product_id?: string | null
+          quantidade?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tiny_product_kit_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "tiny_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tiny_product_production_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_descricao: string | null
+          item_id: number | null
+          item_sku: string | null
+          product_id: string | null
+          quantidade: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_descricao?: string | null
+          item_id?: number | null
+          item_sku?: string | null
+          product_id?: string | null
+          quantidade?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_descricao?: string | null
+          item_id?: number | null
+          item_sku?: string | null
+          product_id?: string | null
+          quantidade?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tiny_product_production_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "tiny_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tiny_product_production_steps: {
+        Row: {
+          created_at: string | null
+          etapa: string | null
+          id: string
+          ordem: number | null
+          product_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          etapa?: string | null
+          id?: string
+          ordem?: number | null
+          product_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          etapa?: string | null
+          id?: string
+          ordem?: number | null
+          product_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tiny_product_production_steps_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "tiny_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tiny_product_suppliers: {
+        Row: {
+          codigo_produto_fornecedor: string | null
+          created_at: string | null
+          fornecedor_id: number | null
+          fornecedor_nome: string | null
+          id: string
+          product_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          codigo_produto_fornecedor?: string | null
+          created_at?: string | null
+          fornecedor_id?: number | null
+          fornecedor_nome?: string | null
+          id?: string
+          product_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          codigo_produto_fornecedor?: string | null
+          created_at?: string | null
+          fornecedor_id?: number | null
+          fornecedor_nome?: string | null
+          id?: string
+          product_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tiny_product_suppliers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "tiny_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tiny_product_variation_grades: {
+        Row: {
+          chave: string | null
+          created_at: string | null
+          id: string
+          valor: string | null
+          variation_id: string | null
+        }
+        Insert: {
+          chave?: string | null
+          created_at?: string | null
+          id?: string
+          valor?: string | null
+          variation_id?: string | null
+        }
+        Update: {
+          chave?: string | null
+          created_at?: string | null
+          id?: string
+          valor?: string | null
+          variation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tiny_product_variation_grades_variation_id_fkey"
+            columns: ["variation_id"]
+            isOneToOne: false
+            referencedRelation: "tiny_product_variations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tiny_product_variations: {
+        Row: {
+          controlar_estoque: boolean | null
+          created_at: string | null
           descricao: string | null
+          dias_preparacao: number | null
+          estoque: number | null
+          estoque_maximo: number | null
+          estoque_minimo: number | null
+          gtin: string | null
+          id: string
+          localizacao: string | null
+          preco: number | null
+          preco_custo: number | null
+          preco_custo_medio: number | null
+          preco_promocional: number | null
+          product_id: string | null
+          sku: string | null
+          sob_encomenda: boolean | null
+          tiny_id: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          controlar_estoque?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          dias_preparacao?: number | null
+          estoque?: number | null
+          estoque_maximo?: number | null
+          estoque_minimo?: number | null
+          gtin?: string | null
+          id?: string
+          localizacao?: string | null
+          preco?: number | null
+          preco_custo?: number | null
+          preco_custo_medio?: number | null
+          preco_promocional?: number | null
+          product_id?: string | null
+          sku?: string | null
+          sob_encomenda?: boolean | null
+          tiny_id?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          controlar_estoque?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          dias_preparacao?: number | null
+          estoque?: number | null
+          estoque_maximo?: number | null
+          estoque_minimo?: number | null
+          gtin?: string | null
+          id?: string
+          localizacao?: string | null
+          preco?: number | null
+          preco_custo?: number | null
+          preco_custo_medio?: number | null
+          preco_promocional?: number | null
+          product_id?: string | null
+          sku?: string | null
+          sob_encomenda?: boolean | null
+          tiny_id?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tiny_product_variations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "tiny_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tiny_products: {
+        Row: {
+          altura: number | null
+          categoria_caminho: string | null
+          categoria_id: number | null
+          categoria_nome: string | null
+          classe_ipi: string | null
+          comprimento: number | null
+          controlar_estoque: boolean | null
+          created_at: string | null
+          descricao: string | null
+          descricao_complementar: string | null
+          diametro: number | null
+          dias_preparacao: number | null
+          embalagem_descricao: string | null
+          embalagem_id: number | null
+          embalagem_tipo: number | null
           estoque: number | null
           estoque_maximo: number | null
           estoque_minimo: number | null
           formato: string | null
+          garantia: string | null
+          gtin: string | null
+          gtin_embalagem: string | null
           id: string
+          largura: number | null
+          localizacao: string | null
+          marca_id: number | null
+          marca_nome: string | null
           metadata: Json | null
+          ncm: string | null
           nome: string
+          observacoes: string | null
+          origem: string | null
           peso_bruto: number | null
           peso_liquido: number | null
           preco: number | null
+          preco_custo: number | null
+          preco_custo_medio: number | null
           preco_promocional: number | null
+          produto_pai_descricao: string | null
+          produto_pai_id: number | null
+          produto_pai_sku: string | null
+          quantidade_volumes: number | null
+          seo_descricao: string | null
+          seo_keywords: string[] | null
+          seo_link_video: string | null
+          seo_slug: string | null
+          seo_titulo: string | null
           situacao: string | null
           sku: string | null
+          sob_encomenda: boolean | null
           tiny_id: number
           tipo: string | null
           unidade: string | null
+          unidade_por_caixa: string | null
           updated_at: string | null
           user_id: string | null
+          valor_ipi_fixo: number | null
         }
         Insert: {
+          altura?: number | null
+          categoria_caminho?: string | null
+          categoria_id?: number | null
+          categoria_nome?: string | null
+          classe_ipi?: string | null
+          comprimento?: number | null
+          controlar_estoque?: boolean | null
           created_at?: string | null
           descricao?: string | null
+          descricao_complementar?: string | null
+          diametro?: number | null
+          dias_preparacao?: number | null
+          embalagem_descricao?: string | null
+          embalagem_id?: number | null
+          embalagem_tipo?: number | null
           estoque?: number | null
           estoque_maximo?: number | null
           estoque_minimo?: number | null
           formato?: string | null
+          garantia?: string | null
+          gtin?: string | null
+          gtin_embalagem?: string | null
           id?: string
+          largura?: number | null
+          localizacao?: string | null
+          marca_id?: number | null
+          marca_nome?: string | null
           metadata?: Json | null
+          ncm?: string | null
           nome: string
+          observacoes?: string | null
+          origem?: string | null
           peso_bruto?: number | null
           peso_liquido?: number | null
           preco?: number | null
+          preco_custo?: number | null
+          preco_custo_medio?: number | null
           preco_promocional?: number | null
+          produto_pai_descricao?: string | null
+          produto_pai_id?: number | null
+          produto_pai_sku?: string | null
+          quantidade_volumes?: number | null
+          seo_descricao?: string | null
+          seo_keywords?: string[] | null
+          seo_link_video?: string | null
+          seo_slug?: string | null
+          seo_titulo?: string | null
           situacao?: string | null
           sku?: string | null
+          sob_encomenda?: boolean | null
           tiny_id: number
           tipo?: string | null
           unidade?: string | null
+          unidade_por_caixa?: string | null
           updated_at?: string | null
           user_id?: string | null
+          valor_ipi_fixo?: number | null
         }
         Update: {
+          altura?: number | null
+          categoria_caminho?: string | null
+          categoria_id?: number | null
+          categoria_nome?: string | null
+          classe_ipi?: string | null
+          comprimento?: number | null
+          controlar_estoque?: boolean | null
           created_at?: string | null
           descricao?: string | null
+          descricao_complementar?: string | null
+          diametro?: number | null
+          dias_preparacao?: number | null
+          embalagem_descricao?: string | null
+          embalagem_id?: number | null
+          embalagem_tipo?: number | null
           estoque?: number | null
           estoque_maximo?: number | null
           estoque_minimo?: number | null
           formato?: string | null
+          garantia?: string | null
+          gtin?: string | null
+          gtin_embalagem?: string | null
           id?: string
+          largura?: number | null
+          localizacao?: string | null
+          marca_id?: number | null
+          marca_nome?: string | null
           metadata?: Json | null
+          ncm?: string | null
           nome?: string
+          observacoes?: string | null
+          origem?: string | null
           peso_bruto?: number | null
           peso_liquido?: number | null
           preco?: number | null
+          preco_custo?: number | null
+          preco_custo_medio?: number | null
           preco_promocional?: number | null
+          produto_pai_descricao?: string | null
+          produto_pai_id?: number | null
+          produto_pai_sku?: string | null
+          quantidade_volumes?: number | null
+          seo_descricao?: string | null
+          seo_keywords?: string[] | null
+          seo_link_video?: string | null
+          seo_slug?: string | null
+          seo_titulo?: string | null
           situacao?: string | null
           sku?: string | null
+          sob_encomenda?: boolean | null
           tiny_id?: number
           tipo?: string | null
           unidade?: string | null
+          unidade_por_caixa?: string | null
           updated_at?: string | null
           user_id?: string | null
+          valor_ipi_fixo?: number | null
         }
         Relationships: []
       }

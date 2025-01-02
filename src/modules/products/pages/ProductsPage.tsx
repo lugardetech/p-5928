@@ -4,12 +4,12 @@ import { columns } from "../components/products-table/columns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Product } from "../components/products-table/types";
+import { TinyProduct } from "@/integrations/supabase/types/tiny-products";
 
 export default function ProductsPage() {
   const { toast } = useToast();
   
-  const { data: products, isLoading } = useQuery<Product[]>({
+  const { data: products, isLoading } = useQuery<TinyProduct[]>({
     queryKey: ['products'],
     queryFn: async () => {
       console.log("=== Buscando produtos ===");
@@ -20,9 +20,19 @@ export default function ProductsPage() {
         throw new Error("Usuário não autenticado");
       }
 
+      console.log("✅ Usuário autenticado:", user.id);
+
       const { data, error } = await supabase
         .from('tiny_products')
-        .select('*')
+        .select(`
+          *,
+          tiny_product_attachments(*),
+          tiny_product_variations(*),
+          tiny_product_suppliers(*),
+          tiny_product_kit_items(*),
+          tiny_product_production_items(*),
+          tiny_product_production_steps(*)
+        `)
         .eq('user_id', user.id);
 
       if (error) {

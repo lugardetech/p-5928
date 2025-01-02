@@ -1,8 +1,8 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { Product } from "./types";
+import { TinyProduct } from "@/integrations/supabase/types/tiny-products";
 
-export const columns: ColumnDef<Product>[] = [
+export const columns: ColumnDef<TinyProduct>[] = [
   {
     accessorKey: "sku",
     header: "SKU",
@@ -15,11 +15,11 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: "preco",
     header: "Preço",
     cell: ({ row }) => {
-      const price = row.getValue("preco");
-      return new Intl.NumberFormat("pt-BR", {
+      const price = parseFloat(row.getValue("preco"));
+      return price ? new Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL",
-      }).format(Number(price));
+      }).format(price) : "-";
     },
   },
   {
@@ -33,7 +33,7 @@ export const columns: ColumnDef<Product>[] = [
       const stock = Number(row.getValue("estoque"));
       return (
         <Badge variant={stock > 0 ? "default" : "destructive"}>
-          {stock}
+          {stock || 0}
         </Badge>
       );
     },
@@ -44,8 +44,8 @@ export const columns: ColumnDef<Product>[] = [
     cell: ({ row }) => {
       const status = row.getValue("situacao") as string;
       return (
-        <Badge variant={status === "Ativo" ? "default" : "secondary"}>
-          {status || "Indefinido"}
+        <Badge variant={status === "A" ? "default" : "secondary"}>
+          {status === "A" ? "Ativo" : "Inativo"}
         </Badge>
       );
     },
