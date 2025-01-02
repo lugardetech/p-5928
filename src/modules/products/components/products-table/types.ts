@@ -1,14 +1,16 @@
+import { Row } from "@tanstack/react-table";
+
 export interface Product {
   id: string;
   nome: string;
   sku: string | null;
-  preco: number | null;
-  unidade: string | null;
-  estoque: number | null;
+  preco: number;
+  unidade: string;
+  estoque: number;
   tipo: string | null;
   situacao: string | null;
 }
 
 export interface ProductTableRowProps {
-  row: any;
+  row: Row<Product>;
 }

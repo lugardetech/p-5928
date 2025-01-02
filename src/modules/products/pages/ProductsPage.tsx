@@ -1,9 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
-import { columns, ProductTableRow } from "../components/products-table/columns";
+import { columns } from "../components/products-table/columns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ProductForm } from "../components/ProductForm";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "../components/products-table/types";
 
@@ -15,19 +14,16 @@ export default function ProductsPage() {
     queryFn: async () => {
       console.log("=== Buscando produtos ===");
       
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error("❌ Usuário não autenticado");
+        throw new Error("Usuário não autenticado");
+      }
+
       const { data, error } = await supabase
         .from('tiny_products')
-        .select(`
-          id,
-          nome,
-          sku,
-          preco,
-          unidade,
-          estoque,
-          tipo,
-          situacao
-        `)
-        .order('nome');
+        .select('*')
+        .eq('user_id', user.id);
 
       if (error) {
         console.error("❌ Erro ao buscar produtos:", error);
@@ -56,7 +52,6 @@ export default function ProductsPage() {
           <h1 className="text-2xl font-bold text-primary">Produtos</h1>
           <p className="text-sm text-muted-foreground">Gerencie seu catálogo de produtos</p>
         </div>
-        <ProductForm />
       </header>
 
       <Card className="p-6">
@@ -64,7 +59,6 @@ export default function ProductsPage() {
           columns={columns} 
           data={products || []} 
           isLoading={isLoading}
-          rowComponent={ProductTableRow}
         />
       </Card>
     </div>
