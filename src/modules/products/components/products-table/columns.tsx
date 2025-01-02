@@ -16,15 +16,13 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: "preco",
     header: "Preço",
     cell: ({ row }) => {
-      const price = row.getValue("preco");
-      const formatted = price ? 
+      const price = row.getValue("preco") as number | null;
+      return price ? 
         new Intl.NumberFormat("pt-BR", {
           style: "currency",
           currency: "BRL",
         }).format(price) : 
         "R$ 0,00";
-
-      return formatted;
     },
   },
   {
@@ -36,7 +34,7 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: "estoque",
     header: "Estoque",
     cell: ({ row }) => {
-      const stock = row.getValue("estoque");
+      const stock = row.getValue("estoque") as number | null;
       return (
         <Badge variant={stock && stock > 0 ? "default" : "destructive"}>
           {stock || "0"}
@@ -48,7 +46,7 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: "situacao",
     header: "Situação",
     cell: ({ row }) => {
-      const status = row.getValue("situacao");
+      const status = row.getValue("situacao") as string | null;
       return (
         <Badge variant={status === "Ativo" ? "default" : "secondary"}>
           {status || "Indefinido"}
@@ -58,7 +56,7 @@ export const columns: ColumnDef<Product>[] = [
   },
 ];
 
-export const ProductTableRow = ({ row }: any) => {
+export const ProductTableRow = ({ row }: ProductTableRowProps) => {
   return (
     <tr className="cursor-pointer hover:bg-muted/50">
       {row.getVisibleCells().map((cell: any) => (

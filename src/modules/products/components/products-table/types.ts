@@ -10,5 +10,5 @@ export interface Product {
 }
 
 export interface ProductTableRowProps {
-  row: any; // Usando any temporariamente para resolver o erro do TableRow
+  row: any;
 }
