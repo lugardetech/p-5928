@@ -8,20 +8,26 @@ export default function PurchasesPage() {
   const { data: purchases, isLoading } = useQuery({
     queryKey: ['purchases'],
     queryFn: async () => {
+      console.log("=== Buscando compras ===");
+      
       const { data, error } = await supabase
-        .from('orders')
+        .from('purchases')
         .select(`
           *,
-          supplier:customers(*),
-          items:order_items(
+          supplier:suppliers(*),
+          items:purchase_items(
             *,
-            product:products(*),
-            product_variation:product_variations(*)
+            product:produtos(*)
           )
         `)
-        .eq('type', 'purchase');
+        .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("❌ Erro ao buscar compras:", error);
+        throw error;
+      }
+
+      console.log("✅ Compras encontradas:", data);
       return data;
     }
   });
