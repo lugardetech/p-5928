@@ -111,42 +111,238 @@ Deno.serve(async (req) => {
       throw new Error('Resposta inválida da API do Tiny');
     }
 
-    // Salvar produtos no banco
-    console.log("🔄 Salvando produtos no banco...");
+    // Para cada produto, buscar detalhes e salvar no banco
+    console.log("🔄 Buscando detalhes de cada produto...");
     for (const item of tinyData.itens) {
-      const productData = {
-        user_id: userId,
-        tiny_id: parseInt(item.id),
-        sku: item.sku,
-        nome: item.descricao,
-        preco: item.precos?.preco || 0,
-        preco_promocional: item.precos?.preco_promocional || null,
-        unidade: item.unidade,
-        tipo: item.tipo,
-        situacao: item.situacao,
-        formato: item.formato,
-        descricao: item.descricao_complementar,
-        estoque: parseFloat(item.saldo || 0),
-        estoque_minimo: parseFloat(item.estoque_minimo || 0),
-        estoque_maximo: parseFloat(item.estoque_maximo || 0),
-        peso_bruto: parseFloat(item.peso_bruto || 0),
-        peso_liquido: parseFloat(item.peso_liquido || 0),
-        metadata: item
-      };
+      try {
+        // Buscar detalhes do produto
+        const detailsResponse = await fetch(`https://api.tiny.com.br/public-api/v3/produtos/${item.id}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${integration.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        });
 
-      const { error: upsertError } = await supabase
-        .from('tiny_products')
-        .upsert(
-          productData,
-          { 
+        if (!detailsResponse.ok) {
+          console.error(`❌ Erro ao buscar detalhes do produto ${item.id}`);
+          continue;
+        }
+
+        const detailsData = await detailsResponse.json();
+        const produto = detailsData.produto;
+
+        // Salvar produto principal
+        const { data: savedProduct, error: productError } = await supabase
+          .from('tiny_products')
+          .upsert({
+            user_id: userId,
+            tiny_id: parseInt(item.id),
+            sku: produto.sku,
+            nome: produto.descricao,
+            descricao_complementar: produto.descricaoComplementar,
+            tipo: produto.tipo,
+            situacao: produto.situacao,
+            produto_pai_id: produto.produtoPai?.id,
+            produto_pai_sku: produto.produtoPai?.sku,
+            produto_pai_descricao: produto.produtoPai?.descricao,
+            unidade: produto.unidade,
+            unidade_por_caixa: produto.unidadePorCaixa,
+            ncm: produto.ncm,
+            gtin: produto.gtin,
+            origem: produto.origem,
+            garantia: produto.garantia,
+            observacoes: produto.observacoes,
+            categoria_id: produto.categoria?.id,
+            categoria_nome: produto.categoria?.nome,
+            categoria_caminho: produto.categoria?.caminhoCompleto,
+            marca_id: produto.marca?.id,
+            marca_nome: produto.marca?.nome,
+            embalagem_id: produto.dimensoes?.embalagem?.id,
+            embalagem_tipo: produto.dimensoes?.embalagem?.tipo,
+            embalagem_descricao: produto.dimensoes?.embalagem?.descricao,
+            largura: produto.dimensoes?.largura,
+            altura: produto.dimensoes?.altura,
+            comprimento: produto.dimensoes?.comprimento,
+            diametro: produto.dimensoes?.diametro,
+            peso_bruto: produto.dimensoes?.pesoBruto,
+            peso_liquido: produto.dimensoes?.pesoLiquido,
+            quantidade_volumes: produto.dimensoes?.quantidadeVolumes,
+            preco: produto.precos?.preco,
+            preco_promocional: produto.precos?.precoPromocional,
+            preco_custo: produto.precos?.precoCusto,
+            preco_custo_medio: produto.precos?.precoCustoMedio,
+            estoque: produto.estoque?.quantidade,
+            estoque_minimo: produto.estoque?.minimo,
+            estoque_maximo: produto.estoque?.maximo,
+            controlar_estoque: produto.estoque?.controlar,
+            sob_encomenda: produto.estoque?.sobEncomenda,
+            dias_preparacao: produto.estoque?.diasPreparacao,
+            localizacao: produto.estoque?.localizacao,
+            seo_titulo: produto.seo?.titulo,
+            seo_descricao: produto.seo?.descricao,
+            seo_keywords: produto.seo?.keywords,
+            seo_link_video: produto.seo?.linkVideo,
+            seo_slug: produto.seo?.slug,
+            gtin_embalagem: produto.tributacao?.gtinEmbalagem,
+            valor_ipi_fixo: produto.tributacao?.valorIPIFixo,
+            classe_ipi: produto.tributacao?.classeIPI,
+          }, {
             onConflict: 'user_id,tiny_id',
-            ignoreDuplicates: false 
-          }
-        );
+            ignoreDuplicates: false
+          })
+          .select('id')
+          .single();
 
-      if (upsertError) {
-        console.error("❌ Erro ao salvar produto:", upsertError);
-        throw upsertError;
+        if (productError) {
+          console.error(`❌ Erro ao salvar produto ${item.id}:`, productError);
+          continue;
+        }
+
+        const productId = savedProduct.id;
+
+        // Salvar fornecedores
+        if (produto.fornecedores?.length > 0) {
+          const { error: suppliersError } = await supabase
+            .from('tiny_product_suppliers')
+            .upsert(
+              produto.fornecedores.map(f => ({
+                product_id: productId,
+                fornecedor_id: f.id,
+                fornecedor_nome: f.nome,
+                codigo_produto_fornecedor: f.codigoProdutoNoFornecedor
+              }))
+            );
+
+          if (suppliersError) {
+            console.error(`❌ Erro ao salvar fornecedores do produto ${item.id}:`, suppliersError);
+          }
+        }
+
+        // Salvar anexos
+        if (produto.anexos?.length > 0) {
+          const { error: attachmentsError } = await supabase
+            .from('tiny_product_attachments')
+            .upsert(
+              produto.anexos.map(a => ({
+                product_id: productId,
+                url: a.url,
+                externo: a.externo
+              }))
+            );
+
+          if (attachmentsError) {
+            console.error(`❌ Erro ao salvar anexos do produto ${item.id}:`, attachmentsError);
+          }
+        }
+
+        // Salvar variações
+        if (produto.variacoes?.length > 0) {
+          for (const variacao of produto.variacoes) {
+            const { data: savedVariation, error: variationError } = await supabase
+              .from('tiny_product_variations')
+              .upsert({
+                product_id: productId,
+                tiny_id: variacao.id,
+                descricao: variacao.descricao,
+                sku: variacao.sku,
+                gtin: variacao.gtin,
+                preco: variacao.precos?.preco,
+                preco_promocional: variacao.precos?.precoPromocional,
+                preco_custo: variacao.precos?.precoCusto,
+                preco_custo_medio: variacao.precos?.precoCustoMedio,
+                controlar_estoque: variacao.estoque?.controlar,
+                sob_encomenda: variacao.estoque?.sobEncomenda,
+                dias_preparacao: variacao.estoque?.diasPreparacao,
+                localizacao: variacao.estoque?.localizacao,
+                estoque_minimo: variacao.estoque?.minimo,
+                estoque_maximo: variacao.estoque?.maximo,
+                estoque: variacao.estoque?.quantidade
+              })
+              .select('id')
+              .single();
+
+            if (variationError) {
+              console.error(`❌ Erro ao salvar variação do produto ${item.id}:`, variationError);
+              continue;
+            }
+
+            // Salvar grades da variação
+            if (variacao.grade?.length > 0) {
+              const { error: gradesError } = await supabase
+                .from('tiny_product_variation_grades')
+                .upsert(
+                  variacao.grade.map(g => ({
+                    variation_id: savedVariation.id,
+                    chave: g.chave,
+                    valor: g.valor
+                  }))
+                );
+
+              if (gradesError) {
+                console.error(`❌ Erro ao salvar grades da variação ${variacao.id}:`, gradesError);
+              }
+            }
+          }
+        }
+
+        // Salvar itens do kit
+        if (produto.kit?.length > 0) {
+          const { error: kitError } = await supabase
+            .from('tiny_product_kit_items')
+            .upsert(
+              produto.kit.map(k => ({
+                product_id: productId,
+                item_id: k.produto.id,
+                item_sku: k.produto.sku,
+                item_descricao: k.produto.descricao,
+                quantidade: k.quantidade
+              }))
+            );
+
+          if (kitError) {
+            console.error(`❌ Erro ao salvar itens do kit do produto ${item.id}:`, kitError);
+          }
+        }
+
+        // Salvar itens de produção
+        if (produto.producao?.produtos?.length > 0) {
+          const { error: productionError } = await supabase
+            .from('tiny_product_production_items')
+            .upsert(
+              produto.producao.produtos.map(p => ({
+                product_id: productId,
+                item_id: p.produto.id,
+                item_sku: p.produto.sku,
+                item_descricao: p.produto.descricao,
+                quantidade: p.quantidade
+              }))
+            );
+
+          if (productionError) {
+            console.error(`❌ Erro ao salvar itens de produção do produto ${item.id}:`, productionError);
+          }
+        }
+
+        // Salvar etapas de produção
+        if (produto.producao?.etapas?.length > 0) {
+          const { error: stepsError } = await supabase
+            .from('tiny_product_production_steps')
+            .upsert(
+              produto.producao.etapas.map((etapa, index) => ({
+                product_id: productId,
+                etapa: etapa,
+                ordem: index + 1
+              }))
+            );
+
+          if (stepsError) {
+            console.error(`❌ Erro ao salvar etapas de produção do produto ${item.id}:`, stepsError);
+          }
+        }
+
+      } catch (error) {
+        console.error(`❌ Erro ao processar produto ${item.id}:`, error);
       }
     }
 
@@ -155,7 +351,15 @@ Deno.serve(async (req) => {
     // Buscar produtos atualizados
     const { data: products, error: fetchError } = await supabase
       .from('tiny_products')
-      .select('*')
+      .select(`
+        *,
+        tiny_product_attachments(*),
+        tiny_product_variations(*),
+        tiny_product_suppliers(*),
+        tiny_product_kit_items(*),
+        tiny_product_production_items(*),
+        tiny_product_production_steps(*)
+      `)
       .eq('user_id', userId);
 
     if (fetchError) {
