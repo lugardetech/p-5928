@@ -1,3 +1,5 @@
+import { TinyProductBase } from './tiny-product-base';
+
 export interface TinyProductDetails extends TinyProductBase {
   descricao_complementar: string | null;
   produto_pai_id: number | null;
@@ -16,7 +18,7 @@ export interface TinyProductDetails extends TinyProductBase {
   marca_nome: string | null;
   embalagem_id: number | null;
   embalagem_tipo: number | null;
-  embalagem_descricao: string | null;
+  embalagem_descricao: text | null;
   largura: number | null;
   altura: number | null;
   comprimento: number | null;

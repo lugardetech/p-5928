@@ -1,3 +1,5 @@
+import { TinyProductDetails } from './tiny-product-details';
+
 export interface TinyProductAttachment {
   id: string;
   product_id: string | null;
