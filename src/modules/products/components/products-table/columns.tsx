@@ -1,104 +1,71 @@
-import { ColumnDef, flexRender } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Product, ProductTableRowProps } from "./types";
-import { ProductAvatar } from "./ProductAvatar";
-import { ProductDialog } from "./ProductDialog";
+import { Product } from "./types";
 
 export const columns: ColumnDef<Product>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Selecionar todos"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Selecionar linha"
-        onClick={(e) => e.stopPropagation()}
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
+    accessorKey: "sku",
+    header: "SKU",
+    cell: ({ row }) => row.getValue("sku") || "-",
   },
   {
-    accessorKey: "image_url",
-    header: "Imagem",
-    cell: ({ row }) => {
-      const imageUrl = row.getValue("image_url") as string | null;
-      return <ProductAvatar imageUrl={imageUrl} productName={row.getValue("name")} />;
-    },
-  },
-  {
-    accessorKey: "name",
+    accessorKey: "nome",
     header: "Nome",
   },
   {
-    accessorKey: "sku",
-    header: "SKU",
-  },
-  {
-    accessorKey: "category",
-    header: "Categoria",
-    cell: ({ row }) => {
-      const category = row.original.category;
-      return category?.name || "Sem categoria";
-    },
-  },
-  {
-    accessorKey: "price",
+    accessorKey: "preco",
     header: "Preço",
     cell: ({ row }) => {
-      const price = parseFloat(row.getValue("price"));
-      const formatted = new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(price);
+      const price = row.getValue("preco");
+      const formatted = price ? 
+        new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }).format(price) : 
+        "R$ 0,00";
 
       return formatted;
     },
   },
   {
-    accessorKey: "stock_quantity",
+    accessorKey: "unidade",
+    header: "Unidade",
+    cell: ({ row }) => row.getValue("unidade") || "-",
+  },
+  {
+    accessorKey: "estoque",
     header: "Estoque",
     cell: ({ row }) => {
-      const stock = parseInt(row.getValue("stock_quantity"));
+      const stock = row.getValue("estoque");
       return (
-        <Badge variant={stock > 0 ? "default" : "destructive"}>
-          {stock}
+        <Badge variant={stock && stock > 0 ? "default" : "destructive"}>
+          {stock || "0"}
         </Badge>
       );
     },
   },
   {
-    accessorKey: "active",
-    header: "Status",
+    accessorKey: "situacao",
+    header: "Situação",
     cell: ({ row }) => {
-      const isActive = row.getValue("active");
+      const status = row.getValue("situacao");
       return (
-        <Badge variant={isActive ? "default" : "secondary"}>
-          {isActive ? "Ativo" : "Inativo"}
+        <Badge variant={status === "Ativo" ? "default" : "secondary"}>
+          {status || "Indefinido"}
         </Badge>
       );
     },
   },
 ];
 
-export const ProductTableRow = ({ row }: ProductTableRowProps) => {
+export const ProductTableRow = ({ row }: any) => {
   return (
-    <ProductDialog productData={row.original}>
-      <tr className="cursor-pointer hover:bg-muted/50">
-        {row.getVisibleCells().map((cell: any) => (
-          <td key={cell.id} className="p-4">
-            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-          </td>
-        ))}
-      </tr>
-    </ProductDialog>
+    <tr className="cursor-pointer hover:bg-muted/50">
+      {row.getVisibleCells().map((cell: any) => (
+        <td key={cell.id} className="p-4">
+          {cell.column.columnDef.cell({ row: cell.row })}
+        </td>
+      ))}
+    </tr>
   );
 };

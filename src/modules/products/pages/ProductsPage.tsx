@@ -9,22 +9,23 @@ import { Product } from "../components/products-table/types";
 
 export default function ProductsPage() {
   const { toast } = useToast();
+  
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ['products'],
     queryFn: async () => {
       console.log("=== Buscando produtos ===");
       
       const { data, error } = await supabase
-        .from('produtos')
+        .from('tiny_products')
         .select(`
           id,
-          codigo as sku,
-          nome as name,
-          preco as price,
-          estoque as stock_quantity,
-          active,
-          image_url,
-          category:categories(name)
+          nome,
+          sku,
+          preco,
+          unidade,
+          estoque,
+          tipo,
+          situacao
         `)
         .order('nome');
 
