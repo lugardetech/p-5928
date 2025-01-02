@@ -5,10 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductForm } from "../components/ProductForm";
 import { useToast } from "@/hooks/use-toast";
+import { Product } from "../components/products-table/types";
 
 export default function ProductsPage() {
   const { toast } = useToast();
-  const { data: products, isLoading, refetch } = useQuery({
+  const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ['products'],
     queryFn: async () => {
       console.log("=== Buscando produtos ===");

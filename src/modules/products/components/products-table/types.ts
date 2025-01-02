@@ -1,7 +1,7 @@
 export interface Product {
   id: string;
-  name: string;
   sku: string;
+  name: string;
   price: number;
   stock_quantity: number;
   active: boolean;
@@ -9,9 +9,8 @@ export interface Product {
   category: {
     name: string;
   } | null;
-  description?: string;
 }
 
 export interface ProductTableRowProps {
-  row: any;
+  row: Product;
 }
