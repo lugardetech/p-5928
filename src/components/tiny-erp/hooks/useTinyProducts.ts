@@ -1,15 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-export interface Product {
-  id: string;
-  nome: string;
-  codigo: string;
-  preco: string;
-  unidade: string;
-  estoque: string;
-}
+import { TinyProduct } from "@/integrations/supabase/types/tiny-products";
 
 export const useTinyProducts = () => {
   const { toast } = useToast();
@@ -27,9 +19,15 @@ export const useTinyProducts = () => {
 
       console.log("✅ Usuário autenticado:", user.id);
 
+      // Buscar produtos com relacionamentos
       const { data, error } = await supabase
         .from('tiny_products')
-        .select('*')
+        .select(`
+          *,
+          anexos:tiny_product_attachments(*),
+          fornecedores:tiny_product_suppliers(*),
+          variacoes:tiny_product_variations(*)
+        `)
         .eq('user_id', user.id);
 
       if (error) {
@@ -39,14 +37,7 @@ export const useTinyProducts = () => {
 
       console.log("✅ Produtos encontrados:", data);
 
-      return data.map(item => ({
-        id: item.id,
-        nome: item.nome,
-        codigo: item.sku || '-',
-        preco: item.preco?.toFixed(2) || "0.00",
-        unidade: item.unidade || "-",
-        estoque: item.estoque?.toString() || "0"
-      }));
+      return data as TinyProduct[];
     },
     meta: {
       onError: (error: Error) => {
