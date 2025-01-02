@@ -34,52 +34,25 @@ export default function ProductsPage() {
 
       console.log("✅ Produtos encontrados:", data);
       return data;
+    },
+    meta: {
+      onError: (error: Error) => {
+        console.error("❌ Erro na query:", error);
+        toast({
+          variant: "destructive",
+          title: "Erro ao carregar produtos",
+          description: error.message || "Ocorreu um erro ao carregar os produtos",
+        });
+      }
     }
   });
-
-  const handleDeleteSelected = async (selectedProducts: any[]) => {
-    try {
-      console.log("🗑️ Tentando excluir produtos:", selectedProducts);
-
-      const productIds = selectedProducts.map(p => p.id).filter(Boolean);
-      
-      if (productIds.length === 0) {
-        throw new Error("Nenhum produto válido selecionado para exclusão");
-      }
-
-      const { error } = await supabase
-        .from('produtos')
-        .delete()
-        .in('id', productIds);
-
-      if (error) {
-        throw error;
-      }
-
-      console.log("✅ Produtos excluídos com sucesso!");
-      
-      toast({
-        title: "Produtos excluídos",
-        description: `${productIds.length} produtos foram excluídos com sucesso.`,
-      });
-
-      refetch();
-    } catch (error) {
-      console.error("❌ Erro ao excluir produtos:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao excluir produtos",
-        description: "Ocorreu um erro ao tentar excluir os produtos selecionados.",
-      });
-    }
-  };
 
   return (
     <div className="space-y-8">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-primary">Produtos</h1>
-          <p className="text-secondary-foreground">Gerencie seu catálogo de produtos</p>
+          <h1 className="text-2xl font-bold text-primary">Produtos</h1>
+          <p className="text-sm text-muted-foreground">Gerencie seu catálogo de produtos</p>
         </div>
         <ProductForm />
       </header>
@@ -90,7 +63,6 @@ export default function ProductsPage() {
           data={products || []} 
           isLoading={isLoading}
           rowComponent={ProductTableRow}
-          onDeleteSelected={handleDeleteSelected}
         />
       </Card>
     </div>
