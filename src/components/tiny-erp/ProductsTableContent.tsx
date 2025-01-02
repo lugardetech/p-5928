@@ -1,4 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 interface Product {
   id: string;
@@ -36,7 +37,11 @@ export const ProductsTableContent = ({ products }: ProductsTableContentProps) =>
               <TableCell className="text-sm">{product.nome}</TableCell>
               <TableCell className="text-sm">R$ {product.preco}</TableCell>
               <TableCell className="text-sm">{product.unidade}</TableCell>
-              <TableCell className="text-sm">{product.estoque}</TableCell>
+              <TableCell className="text-sm">
+                <Badge variant={parseInt(product.estoque) > 0 ? "default" : "destructive"}>
+                  {product.estoque}
+                </Badge>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

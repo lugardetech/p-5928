@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Json } from "@/integrations/supabase/types";
 
 export interface Product {
   id: string;
@@ -10,26 +9,6 @@ export interface Product {
   preco: string;
   unidade: string;
   estoque: string;
-}
-
-interface TinyErpSettings {
-  client_id: string;
-  client_secret: string;
-  redirect_uri: string;
-  [key: string]: string;
-}
-
-function isTinyErpSettings(settings: Json | null): settings is TinyErpSettings {
-  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
-    return false;
-  }
-
-  const s = settings as Record<string, unknown>;
-  return (
-    typeof s.client_id === 'string' &&
-    typeof s.client_secret === 'string' &&
-    typeof s.redirect_uri === 'string'
-  );
 }
 
 export const useTinyProducts = () => {
@@ -48,30 +27,26 @@ export const useTinyProducts = () => {
 
       console.log("✅ Usuário autenticado:", user.id);
 
-      // Chamar Edge Function
-      console.log("🔄 Chamando Edge Function tiny-products...");
-      const { data, error: functionError } = await supabase.functions.invoke('tiny-products', {
-        body: { userId: user.id }
-      });
+      // Buscar produtos da tabela tiny_products
+      const { data, error } = await supabase
+        .from('tiny_products')
+        .select('*')
+        .eq('user_id', user.id);
 
-      if (functionError) {
-        console.error("❌ Erro na Edge Function:", functionError);
-        throw functionError;
+      if (error) {
+        console.error("❌ Erro ao buscar produtos:", error);
+        throw error;
       }
 
-      console.log("✅ Produtos recebidos:", data);
-      
-      if (!data?.itens) {
-        throw new Error("Nenhum produto encontrado");
-      }
+      console.log("✅ Produtos encontrados:", data);
 
-      return data.itens.map(item => ({
+      return data.map(item => ({
         id: item.id,
-        nome: item.descricao,
+        nome: item.nome,
         codigo: item.sku,
-        preco: item.precos?.preco?.toFixed(2) || "0.00",
+        preco: item.preco?.toFixed(2) || "0.00",
         unidade: item.unidade || "-",
-        estoque: "Consultar"
+        estoque: item.estoque?.toString() || "0"
       }));
     },
     retry: false,
