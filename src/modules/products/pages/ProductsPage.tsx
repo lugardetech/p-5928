@@ -26,12 +26,9 @@ export default function ProductsPage() {
         .from('tiny_products')
         .select(`
           *,
-          tiny_product_attachments(*),
-          tiny_product_variations(*),
-          tiny_product_suppliers(*),
-          tiny_product_kit_items(*),
-          tiny_product_production_items(*),
-          tiny_product_production_steps(*)
+          anexos:tiny_product_attachments(*),
+          fornecedores:tiny_product_suppliers(*),
+          variacoes:tiny_product_variations(*)
         `)
         .eq('user_id', user.id);
 
@@ -40,8 +37,14 @@ export default function ProductsPage() {
         throw error;
       }
 
-      console.log("✅ Produtos encontrados:", data);
-      return data;
+      // Converte o metadata para Record<string, any>
+      const productsWithParsedMetadata = data?.map(product => ({
+        ...product,
+        metadata: product.metadata ? JSON.parse(product.metadata as string) : {}
+      })) || [];
+
+      console.log("✅ Produtos encontrados:", productsWithParsedMetadata);
+      return productsWithParsedMetadata as TinyProduct[];
     },
     meta: {
       onError: (error: Error) => {

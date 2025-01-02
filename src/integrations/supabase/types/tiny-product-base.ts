@@ -4,6 +4,7 @@ export interface TinyProductBase {
   tiny_id: number;
   sku: string | null;
   nome: string;
+  codigo: string;
   preco: number | null;
   preco_promocional: number | null;
   unidade: string | null;

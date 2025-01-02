@@ -14,6 +14,7 @@ export interface TinyProductSupplier {
   product_id: string | null;
   fornecedor_id: number | null;
   fornecedor_nome: string | null;
+  nome: string | null;
   codigo_produto_fornecedor: string | null;
   created_at: string | null;
   updated_at: string | null;
