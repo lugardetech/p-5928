@@ -102,17 +102,69 @@ Deno.serve(async (req) => {
       throw new Error(`Erro na API do Tiny: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const tinyData = await response.json();
     console.log("✅ Dados recebidos da API do Tiny");
 
     // Validar a resposta
-    if (!data || !data.itens) {
+    if (!tinyData || !tinyData.itens) {
       console.error("❌ Resposta inválida da API do Tiny");
       throw new Error('Resposta inválida da API do Tiny');
     }
 
+    // Salvar produtos no banco
+    console.log("🔄 Salvando produtos no banco...");
+    for (const item of tinyData.itens) {
+      const productData = {
+        user_id: userId,
+        tiny_id: parseInt(item.id),
+        sku: item.sku,
+        nome: item.descricao,
+        preco: item.precos?.preco || 0,
+        preco_promocional: item.precos?.preco_promocional || null,
+        unidade: item.unidade,
+        tipo: item.tipo,
+        situacao: item.situacao,
+        formato: item.formato,
+        descricao: item.descricao_complementar,
+        estoque: parseFloat(item.saldo || 0),
+        estoque_minimo: parseFloat(item.estoque_minimo || 0),
+        estoque_maximo: parseFloat(item.estoque_maximo || 0),
+        peso_bruto: parseFloat(item.peso_bruto || 0),
+        peso_liquido: parseFloat(item.peso_liquido || 0),
+        metadata: item
+      };
+
+      const { error: upsertError } = await supabase
+        .from('tiny_products')
+        .upsert(
+          productData,
+          { 
+            onConflict: 'user_id,tiny_id',
+            ignoreDuplicates: false 
+          }
+        );
+
+      if (upsertError) {
+        console.error("❌ Erro ao salvar produto:", upsertError);
+        throw upsertError;
+      }
+    }
+
+    console.log("✅ Produtos salvos com sucesso");
+
+    // Buscar produtos atualizados
+    const { data: products, error: fetchError } = await supabase
+      .from('tiny_products')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (fetchError) {
+      console.error("❌ Erro ao buscar produtos:", fetchError);
+      throw fetchError;
+    }
+
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify({ itens: products }),
       { 
         headers: { 
           ...corsHeaders, 

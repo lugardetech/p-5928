@@ -1213,6 +1213,75 @@ export type Database = {
         }
         Relationships: []
       }
+      tiny_products: {
+        Row: {
+          created_at: string | null
+          descricao: string | null
+          estoque: number | null
+          estoque_maximo: number | null
+          estoque_minimo: number | null
+          formato: string | null
+          id: string
+          metadata: Json | null
+          nome: string
+          peso_bruto: number | null
+          peso_liquido: number | null
+          preco: number | null
+          preco_promocional: number | null
+          situacao: string | null
+          sku: string | null
+          tiny_id: number
+          tipo: string | null
+          unidade: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descricao?: string | null
+          estoque?: number | null
+          estoque_maximo?: number | null
+          estoque_minimo?: number | null
+          formato?: string | null
+          id?: string
+          metadata?: Json | null
+          nome: string
+          peso_bruto?: number | null
+          peso_liquido?: number | null
+          preco?: number | null
+          preco_promocional?: number | null
+          situacao?: string | null
+          sku?: string | null
+          tiny_id: number
+          tipo?: string | null
+          unidade?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descricao?: string | null
+          estoque?: number | null
+          estoque_maximo?: number | null
+          estoque_minimo?: number | null
+          formato?: string | null
+          id?: string
+          metadata?: Json | null
+          nome?: string
+          peso_bruto?: number | null
+          peso_liquido?: number | null
+          preco?: number | null
+          preco_promocional?: number | null
+          situacao?: string | null
+          sku?: string | null
+          tiny_id?: number
+          tipo?: string | null
+          unidade?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
